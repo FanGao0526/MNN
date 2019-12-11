@@ -6,11 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUArgMax.hpp"
+#include "backend/cpu/CPUArgMax.hpp"
 #include <float.h>
-#include "CPUBackend.hpp"
-#include "CommonOptFunction.h"
-#include "TensorUtils.hpp"
+#include "backend/cpu/CPUBackend.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 
@@ -44,7 +44,7 @@ ErrorCode CPUArgMax::onResize(const std::vector<Tensor *> &inputs, const std::ve
     mNum       = 1;
     mDim       = 1;
     mKeyExtent = 1;
-    
+
     if(mAxis < 0){
         mAxis = mAxis + input->dimensions();
     }
@@ -100,17 +100,20 @@ ErrorCode CPUArgMax::onExecute(const std::vector<Tensor *> &inputs, const std::v
         for (int i = 0; i < mNum; ++i) {
             auto iptr = srcOrigin + i * mDim * mKeyExtent;
             auto optr = dstOrigin + i * mKeyExtent;
-
-            int index      = 0;
-            float maxValue = -FLT_MAX;
-            for (int j = 0; j < mDim; ++j) {
-                auto val = iptr[j * mKeyExtent];
-                if (val > maxValue) {
-                    maxValue = val;
-                    index    = j;
+            
+            for(int k = 0; k < mKeyExtent; ++k){
+                int index      = 0;
+                float maxValue = -FLT_MAX;
+                for (int j = 0; j < mDim; ++j) {
+                    auto val = iptr[k + j * mKeyExtent];
+                    if (val > maxValue) {
+                        maxValue = val;
+                        index    = j;
+                    }
                 }
+                optr[k] = index;
             }
-            optr[0] = index;
+            
         }
     } else {
         // Legacy code for CAFFE

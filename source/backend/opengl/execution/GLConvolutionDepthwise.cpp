@@ -6,13 +6,13 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLConvolutionDepthwise.hpp"
-#include "AutoTime.hpp"
+#include "backend/opengl/GLConvolutionDepthwise.hpp"
+#include <MNN/AutoTime.hpp>
 
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
 namespace MNN {
 namespace OpenGL {
 
@@ -88,7 +88,7 @@ GLConvolutionDepthwise::GLConvolutionDepthwise(const std::vector<Tensor *> &inpu
 
     ((GLBackend *)backend())->compute(srcDepthQuad, fw, fh);
     OPENGL_CHECK_ERROR;
-    
+
 }
 
 ErrorCode GLConvolutionDepthwise::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {

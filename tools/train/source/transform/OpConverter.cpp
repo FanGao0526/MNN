@@ -8,7 +8,8 @@
 
 #include "OpConverter.hpp"
 #include <map>
-#include "ExprCreator.hpp"
+#include <MNN/expr/ExprCreator.hpp>
+
 using namespace MNN;
 using namespace MNN::Express;
 static std::map<MNN::OpType, OpConverter*>& getConverter() {
@@ -59,13 +60,12 @@ EXPRP OpConverter::convert(EXPRP source) {
         conv2DCommon->inputCount = srcCount;
     }
     biasValue = _Const((const void*)conv2D->bias.data(), {(int)conv2D->bias.size()}, NCHW);
-    weightValue->setName(op->name + "_Weight");
-    biasValue->setName(op->name + "_Bias");
+    weightValue->setName(source->name() + "_Weight");
+    biasValue->setName(source->name() + "_Bias");
     // Origin Convolution
     std::unique_ptr<OpT> newConvOp(new OpT);
     {
         newConvOp->type       = op->type;
-        newConvOp->name       = op->name;
         newConvOp->main.type  = OpParameter_Convolution2D;
         newConvOp->main.value = new Convolution2DT;
         newConvOp->main.AsConvolution2D()->common.reset(new Convolution2DCommonT(*conv2DCommon));
@@ -81,11 +81,13 @@ EXPRP OpConverter::convert(EXPRP source) {
 
     EXPRP newConv = Expr::create(std::move(newConvOp), {inputs[0], weightValue, biasValue});
     VARP resultVariable = Variable::create(newConv, 0);
+    resultVariable->setName(source->name());
     if (relu) {
         resultVariable = _Relu(resultVariable);
+        resultVariable->setName(source->name() + "_Relu");
     } else if (relu6) {
         resultVariable = _Relu6(resultVariable);
+        resultVariable->setName(source->name() + "_Relu6");
     }
-    resultVariable->setName(op->name);
     return resultVariable->expr().first;
 }

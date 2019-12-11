@@ -6,9 +6,9 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "ImageSampler.hpp"
+#include "cv/ImageSampler.hpp"
 #include <algorithm>
-#include "Macro.h"
+#include "core/Macro.h"
 #ifdef MNN_USE_NEON
 #include <arm_neon.h>
 #endif

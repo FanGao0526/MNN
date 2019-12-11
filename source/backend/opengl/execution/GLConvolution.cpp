@@ -6,13 +6,13 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLConvolution.hpp"
-#include "AutoTime.hpp"
+#include "backend/opengl/GLConvolution.hpp"
+#include <MNN/AutoTime.hpp>
 
 #include <sstream>
 #include "AllShader.hpp"
-#include "Macro.h"
-#include "GLConvolutionIm2col.hpp"
+#include "core/Macro.h"
+#include "backend/opengl/GLConvolutionIm2col.hpp"
 namespace MNN {
 namespace OpenGL {
 
@@ -81,7 +81,7 @@ GLConvolution::GLConvolution(const std::vector<Tensor *> &inputs, const Op *conv
         ::memset(dest, 0, alignedWeightSize * sizeof(float));
         const float *source = convOp->main_as_Convolution2D()->weight()->data();
         int cur             = 0;
-        
+
         //weight : oc ic h w -> oc/4, ic/4 ky kx ic4 oc4
         for (int b = 0; b < mCommon->outputCount(); ++b) {
             int b_4      = b / unit;
@@ -101,14 +101,14 @@ GLConvolution::GLConvolution(const std::vector<Tensor *> &inputs, const Op *conv
             }
         }
     }
-    
+
     mKernelBuffer->unmap();
-    
+
     int ic_4      = UP_DIV(mInputDepth, unit);
     //weight image : ky kx, oc/4, ic/4*ic4 oc4
     mKernelTexture =
     std::shared_ptr<GLTexture>(new GLTexture(ic_4 * unit, oc_4, fw * fh, ((GLBackend *)backend())->getTextrueFormat() , GL_TEXTURE_3D, false));
-    
+
     auto transform = extra->getProgram("transform_kernel_image_adreno", glsl_kernel2image_adreno_glsl);
     transform->useProgram();
     glBindImageTexture(0, mKernelTexture->id(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
@@ -117,11 +117,11 @@ GLConvolution::GLConvolution(const std::vector<Tensor *> &inputs, const Op *conv
     glUniform1i(3, fw * fh);
     glUniform1i(4, ic_4);
     OPENGL_CHECK_ERROR;
-    
+
     ((GLBackend *)backend())->compute(ic_4, oc_4, fw * fh);
     OPENGL_CHECK_ERROR;
 }
-    
+
 ErrorCode GLConvolution::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     GPUConvolution::onResize(inputs, outputs);
     auto extra = (GLBackend *)backend();
@@ -132,16 +132,16 @@ ErrorCode GLConvolution::onResize(const std::vector<Tensor *> &inputs, const std
     if (mCommon->relu6()) {
         prefix.push_back("#define RELU6");
     }
-    
+
     auto dstDepthQuad = UP_DIV(outputs[0]->channel(), 4);
-    
+
     setLocalSize(prefix, mLocalSize, 1, 1, dstDepthQuad);
 
     if (1 == mCommon->kernelY() && 1 == mCommon->kernelX() && 1 == mCommon->strideY() && 1 == mCommon->strideX() &&
         0 == mCommon->padX() && 0 == mCommon->padY()) {
         mIs1x1      = true;
     }
-    
+
     if (mIs1x1) {
         mProgram = extra->getProgram("convolution1x1", glsl_convolution1x1_glsl, prefix);
     } else {
@@ -153,11 +153,11 @@ ErrorCode GLConvolution::onResize(const std::vector<Tensor *> &inputs, const std
         mDy      = mCommon->dilateY();
         mProgram = extra->getProgram("convolution", glsl_convolution_glsl, prefix);
     }
-    
+
     return NO_ERROR;
 }
 
-    
+
 ErrorCode GLConvolution::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     {
         auto convLayer = mCommon;
@@ -203,7 +203,7 @@ ErrorCode GLConvolution::onExecute(const std::vector<Tensor *> &inputs, const st
 
         ((GLBackend *)backend())->compute(UP_DIV(output->width(), UNIT*mLocalSize[0]), UP_DIV(output->height(), mLocalSize[1]),
                                                 UP_DIV(oc_4, mLocalSize[2]));
-        
+
         OPENGL_CHECK_ERROR;
     }
 
@@ -217,7 +217,7 @@ public:
     virtual Execution *onCreate(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs,
                                 const MNN::Op *op, Backend *backend) const override {
         auto common = op->main_as_Convolution2D()->common();
-        
+
         //TODO: bugfix
         if(common->padX() == 1 || common->strideX() != 1){
             return new GLConvolution(inputs, op, backend);
@@ -233,7 +233,7 @@ public:
         }
     }
 };
-    
+
 GLCreatorRegister<ConvolutionCreator> __gl_conv_op(OpType_Convolution);
 } // namespace OpenGL
 } // namespace MNN

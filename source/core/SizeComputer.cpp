@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "SizeComputer.hpp"
+#include "core/SizeComputer.hpp"
 #include <stdlib.h>
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 #include <mutex>
 namespace MNN {
 #ifdef MNN_CODEGEN_REGISTER

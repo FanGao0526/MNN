@@ -9,7 +9,7 @@
 #include <fstream>
 #include <map>
 #include <sstream>
-#include "MNNDefine.h"
+#include <MNN/MNNDefine.h>
 #include "MNN_generated.h"
 #include "rapidjson/document.h"
 using namespace MNN;

@@ -6,11 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUTensorConvert.hpp"
-#include "CPUBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
-#include "compute/CommonOptFunction.h"
+#include "backend/cpu/CPUTensorConvert.hpp"
+#include "backend/cpu/CPUBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
 
 namespace MNN {
 
@@ -112,7 +112,7 @@ ErrorCode CPUTensorConverter::convert(const Tensor* input, const Tensor* output)
         }
     }
     const int bitLength = ib.type.bytes();
-    
+
     if (MNN_DATA_FORMAT_NC4HW4 == source && MNN_DATA_FORMAT_NCHW == dest) {
         if (bitLength == 1) {
             for (int i = 0; i < ib.dim[0].extent; ++i) {
@@ -141,7 +141,7 @@ ErrorCode CPUTensorConverter::convert(const Tensor* input, const Tensor* output)
         }
         return NO_ERROR;
     }
-    
+
     if (MNN_DATA_FORMAT_NHWC == source && MNN_DATA_FORMAT_NC4HW4 == dest) {
         if (bitLength == 1) {
             _NHWC2NC4HW4Uint8((uint8_t*)ib.host, (uint8_t*)ob.host, batch, channel, area);
@@ -164,7 +164,7 @@ ErrorCode CPUTensorConverter::convert(const Tensor* input, const Tensor* output)
         MNN_ASSERT(false);
         return NOT_SUPPORT;
     }
-    
+
     return NO_ERROR;
 }
 

@@ -7,7 +7,7 @@
 //
 
 #include "PoolGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN;
 using namespace MNN::Express;
@@ -19,7 +19,7 @@ public:
     }
 
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<Express::VARP> result{nullptr};
+        std::vector<Express::VARP> result(1, nullptr);
         auto outputDiff = backwardOutput[0];
         std::unique_ptr<OpT> forwardOp(expr->get()->UnPack());
         unique_ptr<OpT> newOp(new OpT);
@@ -29,6 +29,7 @@ public:
         newOp->main.value    = copyP;
         
         result[0] = Variable::create(Expr::create(std::move(newOp), {expr->inputs()[0], output[0], outputDiff}));
+        result[0]->setName(expr->name() + "_Grad");
         return result;
     }
 };

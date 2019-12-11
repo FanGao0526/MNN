@@ -6,23 +6,23 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLSqueeze.hpp"
+#include "backend/opengl/GLSqueeze.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
 GLSqueeze::GLSqueeze(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) : Execution(bn) {
-    
+
 }
 
 GLSqueeze::~GLSqueeze() {
-    
+
 }
-    
+
 ErrorCode GLSqueeze::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input = inputs[0];
     auto output = outputs[0];
@@ -36,15 +36,15 @@ ErrorCode GLSqueeze::onResize(const std::vector<Tensor *> &inputs, const std::ve
 ErrorCode GLSqueeze::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input = inputs[0];
     auto output = outputs[0];
-    
+
     std::vector<int> inputShape  = tensorShapeFormat(input);
-    
+
     int ib = inputShape.at(0);
     int ih = inputShape.at(1);
     int iw = inputShape.at(2);
     int ic = inputShape.at(3);
     int ic_4 = UP_DIV(ic, 4);
-    
+
     mProgram->useProgram();
     glBindImageTexture(0, output->deviceId(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
     {
@@ -65,7 +65,7 @@ public:
     virtual ~SqueezeCreator() = default;
     virtual Execution *onCreate(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs,
                                 const MNN::Op *op, Backend *backend) const override {
-        
+
         if(inputs[0]->dimensions() == 3 || outputs[0]->dimensions() == 3){
             MNN_PRINT("reshape not support dimensions == 3 \n");
             return nullptr;

@@ -10,7 +10,7 @@
 #include "PostTreatUtils.hpp"
 #include "Program.hpp"
 #include "TemplateMerge.hpp"
-#include "Optimizer.hpp"
+#include <MNN/expr/Optimizer.hpp>
 using namespace MNN::Express;
 
 static void _printInputOutputs(const MNN::NetT* newNet) {
@@ -76,7 +76,7 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet) {
             LOG(INFO) << "Run " << pass << "Error\n";
         }
     }
-    
+
     auto program = MNN::Express::Program::create(originNet.get(), true);
     std::vector<std::string> optimizePass = {
         "Merge",
@@ -115,13 +115,16 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet) {
         newNet->bizCode = originNet->bizCode;
         Variable::save(outputs, newNet.get());
     }
-    
+
     std::vector<std::string> afterProgramConvert = {
         // Turn BatchNormal to Scale When inference
         "TransformBatchNormal",
-        
+
         // remove onnx lstm unuseful op(Squeeze, Transpose after LSTM)
         "ResolveOnnxLSTM",
+        
+        // expand ShapeN to N Shapes
+        "ResolveTfShapeN",
 
         // Merge Scale info Convolution
         "MergeToConvolution",
@@ -149,10 +152,10 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet) {
             LOG(INFO) << "Run " << pass << "Error\n";
         }
     }
-    
+
     if (!printedInputOutput) {
         _printInputOutputs(newNet.get());
     }
-    
+
     return newNet;
 }

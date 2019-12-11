@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "ImageBlitter.hpp"
+#include "cv/ImageBlitter.hpp"
 #include <string.h>
 #include <mutex>
-#include "Macro.h"
+#include "core/Macro.h"
 #ifdef MNN_USE_NEON
 #include <arm_neon.h>
 #endif

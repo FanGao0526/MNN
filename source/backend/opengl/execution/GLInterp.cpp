@@ -6,11 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLInterp.hpp"
+#include "backend/opengl/GLInterp.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
 namespace MNN {
 namespace OpenGL {
 GLInterp::GLInterp(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) : Execution(bn) {
@@ -18,7 +18,7 @@ GLInterp::GLInterp(const std::vector<Tensor *> &inputs, const Op *op, Backend *b
     mAlignCorners    = interpParam->alignCorners();
     mResizeType = interpParam->resizeType();
 }
-    
+
 ErrorCode GLInterp::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     std::vector<std::string> prefix;
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
@@ -31,24 +31,24 @@ ErrorCode GLInterp::onResize(const std::vector<Tensor *> &inputs, const std::vec
     }
     return NO_ERROR;
 }
-    
+
 GLInterp::~GLInterp() {
 }
 
 ErrorCode GLInterp::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input  = inputs[0];
     auto output  = outputs[0];
-    
+
     int iw = input->width();
     int ih = input->height();
     int ic_4 = UP_DIV(input->channel(), 4);
     int ib = input->batch();
-    
+
     int ow = output->width();
     int oh = output->height();
     int oc_4 = UP_DIV(output->channel(), 4);
     int ob = output->batch();
-    
+
     float xScale = 1;
     float yScale = 1;
     if (mAlignCorners) {
@@ -73,7 +73,7 @@ ErrorCode GLInterp::onExecute(const std::vector<Tensor *> &inputs, const std::ve
     glUniform2f(4, xScale, yScale);
     OPENGL_CHECK_ERROR;
     ((GLBackend *)backend())->compute(UP_DIV(ow, mLocalSize[0]), UP_DIV(oh, mLocalSize[1]), UP_DIV(oc_4*ob, mLocalSize[2]));
-    
+
     return NO_ERROR;
 }
 GLCreatorRegister<TypedCreator<GLInterp>> __interp_op(OpType_Interp);

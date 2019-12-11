@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CommonOptFunction.h"
+#include "backend/cpu/compute/CommonOptFunction.h"
 #include <string.h>
 #include <algorithm>
-#include "Macro.h"
+#include "core/Macro.h"
 #include <math.h>
 #ifdef MNN_USE_NEON
 #include <arm_neon.h>

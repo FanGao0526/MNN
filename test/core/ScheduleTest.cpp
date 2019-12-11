@@ -11,13 +11,13 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "MNNDefine.h"
+#include <MNN/MNNDefine.h>
 #include "MNNTestSuite.h"
 #include "MNN_generated.h"
-#include "Pipeline.hpp"
-#include "Schedule.hpp"
-#include "Session.hpp"
-#include "TensorUtils.hpp"
+#include "core/Pipeline.hpp"
+#include "core/Schedule.hpp"
+#include "core/Session.hpp"
+#include "core/TensorUtils.hpp"
 #include "TestUtils.h"
 
 using namespace MNN;
@@ -45,7 +45,7 @@ public:
     FakeSession(const Schedule::ScheduleInfo& info) : Session(info) {
     }
 
-    const std::vector<std::unique_ptr<Pipeline>>& getFakePipelines() const {
+    const std::vector<std::shared_ptr<Pipeline>>& getFakePipelines() const {
         return this->getPipelines();
     }
 };
@@ -137,7 +137,7 @@ static void TestScheduleSpec() {
     Session* session         = instance->createSession(conf);
     FakeSession* fakeSession = reinterpret_cast<FakeSession*>(session);
 
-    const std::vector<std::unique_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
     FakePipeline* fakePipeline                                = reinterpret_cast<FakePipeline*>(pipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& units = fakePipeline->getFakeUnit();
     stringstream ss;
@@ -176,7 +176,7 @@ static void TestScheduleSpec() {
 
     Session* sessionMulti                                        = instance->createMultiPathSession(configs);
     fakeSession                                                  = reinterpret_cast<FakeSession*>(sessionMulti);
-    const std::vector<std::unique_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
     fakePipeline = reinterpret_cast<FakePipeline*>(multiPipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& multiUnits = fakePipeline->getFakeUnit();
     FakePipeline* fakePipeline2 = reinterpret_cast<FakePipeline*>(multiPipelines[1].get());
@@ -229,7 +229,7 @@ static void TestSchedule() {
     Session* session         = instance->createSession(conf);
     FakeSession* fakeSession = reinterpret_cast<FakeSession*>(session);
 
-    const std::vector<std::unique_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
     FakePipeline* fakePipeline                                = reinterpret_cast<FakePipeline*>(pipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& units = fakePipeline->getFakeUnit();
     stringstream ss;
@@ -265,7 +265,7 @@ static void TestSchedule() {
 
     Session* sessionMulti                                        = instance->createMultiPathSession(configs);
     fakeSession                                                  = reinterpret_cast<FakeSession*>(sessionMulti);
-    const std::vector<std::unique_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
     fakePipeline = reinterpret_cast<FakePipeline*>(multiPipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& multiUnits = fakePipeline->getFakeUnit();
     FakePipeline* fakePipeline2 = reinterpret_cast<FakePipeline*>(multiPipelines[1].get());
@@ -311,7 +311,7 @@ static void TestScheduleOneInputHaveBeginNoEnd() {
     Session* session         = instance->createSession(conf);
     FakeSession* fakeSession = reinterpret_cast<FakeSession*>(session);
 
-    const std::vector<std::unique_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
     FakePipeline* fakePipeline                                = reinterpret_cast<FakePipeline*>(pipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& units = fakePipeline->getFakeUnit();
     stringstream ss;
@@ -338,7 +338,7 @@ static void TestScheduleOneInputHaveBeginNoEnd() {
 
     Session* sessionMulti                                        = instance->createMultiPathSession(configs);
     fakeSession                                                  = reinterpret_cast<FakeSession*>(sessionMulti);
-    const std::vector<std::unique_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
     fakePipeline = reinterpret_cast<FakePipeline*>(multiPipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& multiUnits = fakePipeline->getFakeUnit();
     ss.str("");
@@ -370,7 +370,7 @@ static void TestScheduleMultiInputsHaveBeginNoEnd() {
     Session* session         = instance->createSession(conf);
     FakeSession* fakeSession = reinterpret_cast<FakeSession*>(session);
 
-    const std::vector<std::unique_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& pipelines   = fakeSession->getFakePipelines();
     FakePipeline* fakePipeline                                = reinterpret_cast<FakePipeline*>(pipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& units = fakePipeline->getFakeUnit();
     stringstream ss;
@@ -398,7 +398,7 @@ static void TestScheduleMultiInputsHaveBeginNoEnd() {
 
     Session* sessionMulti                                        = instance->createMultiPathSession(configs);
     fakeSession                                                  = reinterpret_cast<FakeSession*>(sessionMulti);
-    const std::vector<std::unique_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
+    const std::vector<std::shared_ptr<Pipeline>>& multiPipelines = fakeSession->getFakePipelines();
     fakePipeline = reinterpret_cast<FakePipeline*>(multiPipelines[0].get());
     const std::vector<std::shared_ptr<Pipeline::Unit>>& multiUnits = fakePipeline->getFakeUnit();
     ss.str("");

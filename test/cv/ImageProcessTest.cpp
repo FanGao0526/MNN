@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <cmath>
-#include "ImageProcess.hpp"
+#include <MNN/ImageProcess.hpp>
 #include "MNNTestSuite.h"
 
 using namespace MNN;
@@ -242,7 +242,7 @@ public:
         ImageProcess::Config config;
         config.sourceFormat = RGB;
         config.destFormat   = BGR;
-        
+
         std::shared_ptr<ImageProcess> process(ImageProcess::create(config));
         process->convert(integers.data(), w, h, 0, tensor.get());
         for (int i = 0; i < size; ++i) {
@@ -684,7 +684,7 @@ public:
         ImageProcess::Config config;
         config.sourceFormat = BGR;
         config.destFormat   = BGR;
-        
+
         const float means[3] = {127.5f, 127.5f, 127.5f};
         const float normals[3] = {2.0f / 255.0f, 2.0f / 255.0f, 2.0f / 255.0f};
         memcpy(config.mean, means, sizeof(means));
@@ -724,7 +724,7 @@ public:
         ImageProcess::Config config;
         config.sourceFormat = GRAY;
         config.destFormat   = GRAY;
-        
+
         const float means[1] = {127.5f};
         const float normals[1] = {2.0f / 255.0f};
         memcpy(config.mean, means, sizeof(means));

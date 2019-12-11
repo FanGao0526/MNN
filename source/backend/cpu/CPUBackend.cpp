@@ -6,20 +6,20 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUBackend.hpp"
+#include "backend/cpu/CPUBackend.hpp"
 #include <cmath>
 #include <mutex>
-#include "BufferAllocator.hpp"
-#include "CPUConcat.hpp"
-#include "CPUTensorConvert.hpp"
-#include "CommonOptFunction.h"
-#include "TensorUtils.hpp"
-#include "ThreadPool.hpp"
-#include "SizeComputer.hpp"
+#include "core/BufferAllocator.hpp"
+#include "backend/cpu/CPUConcat.hpp"
+#include "backend/cpu/CPUTensorConvert.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "core/TensorUtils.hpp"
+#include "backend/cpu/ThreadPool.hpp"
+#include "core/SizeComputer.hpp"
 #ifdef _OPENMP
 #include <omp.h>
 #endif // _OPENMP
-#include "CPURuntime.hpp"
+#include "backend/cpu/CPURuntime.hpp"
 
 #define MAX_THREAD_NUMBER 32
 

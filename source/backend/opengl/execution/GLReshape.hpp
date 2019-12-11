@@ -8,11 +8,11 @@
 
 #ifndef GLReshape_H
 #define GLReshape_H
-#include "Execution.hpp"
-#include "GLProgram.hpp"
-#include "GLTexture.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLProgram.hpp"
+#include "backend/opengl/GLTexture.hpp"
+#include "backend/opengl/GLSSBOBuffer.hpp"
 #include "MNN_generated.h"
-#include "GLSSBOBuffer.hpp"
 
 namespace MNN {
 namespace OpenGL {

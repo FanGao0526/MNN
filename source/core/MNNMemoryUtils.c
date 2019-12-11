@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "MNNMemoryUtils.h"
 #include <stdint.h>
 #include <stdlib.h>
-#include "Macro.h"
+#include "core/MNNMemoryUtils.h"
+#include "core/Macro.h"
 
 static inline void **alignPointer(void **ptr, size_t alignment) {
     return (void **)((intptr_t)((unsigned char *)ptr + alignment - 1) & -alignment);

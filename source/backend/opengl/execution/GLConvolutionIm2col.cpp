@@ -6,15 +6,15 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLConvolution.hpp"
-#include "AutoTime.hpp"
+#include "backend/opengl/GLConvolution.hpp"
+#include <MNN/AutoTime.hpp>
 
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "GLConvolutionIm2col.hpp"
-#include "GLUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "backend/opengl/GLConvolutionIm2col.hpp"
+#include "backend/opengl/GLUtils.hpp"
 namespace MNN {
 namespace OpenGL {
 
@@ -37,7 +37,7 @@ GLConvolutionIm2col::GLConvolutionIm2col(const std::vector<Tensor *> &inputs, co
         ::memset(dest, 0, totalWeightSize * sizeof(float));
         const float *source = convOp->main_as_Convolution2D()->weight()->data();
         int cur             = 0;
-        
+
         //weight : oc ic -> oc/4 ic/4 ic4 oc4
         //weight image : oc_4, ic_4 * ic4 oc4
         int alignedWeightSize = ic_4 * fw * fh * UNIT2;
@@ -78,7 +78,7 @@ GLConvolutionIm2col::GLConvolutionIm2col(const std::vector<Tensor *> &inputs, co
     OPENGL_CHECK_ERROR;
     ((GLBackend *)backend())->compute(UP_DIV(imageWidth, 4), UP_DIV(oc_4, 4), 1);
     OPENGL_CHECK_ERROR;
-    
+
 //bias
     mBiasBuffer.reset(new GLSSBOBuffer(sizeof(float) * ALIGN_UP4(mCommon->outputCount())));
     float* bias = (float*)(mBiasBuffer->map(GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
@@ -89,7 +89,7 @@ GLConvolutionIm2col::GLConvolutionIm2col(const std::vector<Tensor *> &inputs, co
     }
     mBiasBuffer->unmap();
 }
-    
+
 ErrorCode GLConvolutionIm2col::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     GPUConvolution::onResize(inputs, outputs);
     std::vector<std::string> im2colPrefix;
@@ -111,19 +111,19 @@ ErrorCode GLConvolutionIm2col::onResize(const std::vector<Tensor *> &inputs, con
     int oc = outputs[0]->channel();
     int oh = outputs[0]->height();
     int ow = outputs[0]->width();
-    
+
     int ic = inputs[0]->channel();
 
     obxohxow_4  = UP_DIV(ob*oh*ow, 4);
 
     int fw                = mCommon->kernelX();
     int fh                = mCommon->kernelY();
-    
+
     //input : temp image : (ib*oh*ow)/ 4, ic/4*(ib*oh*ow)%4*ic4
     //output : temp image : oc/4 * (ob*oh*ow)%4, (ob*oh*ow)/4 * oc4
     mSrcTexture = std::shared_ptr<GLTexture>(new GLTexture(UP_DIV(ic, 4)*UNIT*fw*fh, obxohxow_4, 1, ((GLBackend *)backend())->getTextrueFormat(), GL_TEXTURE_2D, false));
     mDstTexture = std::shared_ptr<GLTexture>(new GLTexture(obxohxow_4, UP_DIV(oc, 4) * UNIT, 1, ((GLBackend *)backend())->getTextrueFormat(), GL_TEXTURE_2D, false));
-    
+
     auto transform = mGLBackend->getProgram("clear_texture", glsl_clear_texture_glsl);
     transform->useProgram();
     glBindImageTexture(0, mSrcTexture->id(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
@@ -134,7 +134,7 @@ ErrorCode GLConvolutionIm2col::onResize(const std::vector<Tensor *> &inputs, con
     OPENGL_CHECK_ERROR;
     ((GLBackend *)backend())->compute(UP_DIV(UP_DIV(ic, 4)*UNIT*fw*fh, 4), UP_DIV(obxohxow_4, 4), 1);
     OPENGL_CHECK_ERROR;
-    
+
     if (true == mIsConv1x1) {
         setLocalSize(im2colPrefix, mIm2colSize, 8, 8, 1);
         mIm2ColProgram = mGLBackend->getProgram("image2col1x1", glsl_im2col1x1_glsl, im2colPrefix);
@@ -155,7 +155,7 @@ ErrorCode GLConvolutionIm2col::onResize(const std::vector<Tensor *> &inputs, con
             glUniform2i(5, mCommon->dilateX(), mCommon->dilateY());
         };
     }
-    
+
     return NO_ERROR;
 }
 ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
@@ -164,20 +164,20 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
     auto output        = outputs[0];
     auto inputTexture  = input->deviceId();
     auto outputTexture = output->deviceId();
-    
+
     int iw = input->width();
     int ih = input->height();
     int ic = input->channel();
     int ib = input->batch();
-    
+
     int ow = output->width();
     int oh = output->height();
     int oc = output->channel();
     int ob = output->batch();
-    
+
     int ic_4 = UP_DIV(ic, 4);
     int oc_4 = UP_DIV(oc, 4);
-    
+
     //        image2col
     {
         mIm2ColProgram->useProgram();
@@ -189,7 +189,7 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
             glBindTexture(GL_TEXTURE_3D, inputTexture);
             OPENGL_CHECK_ERROR;
         }
-        
+
         if (mIsConv1x1) {
             glUniform1i(5, ic_4);
             glUniform1i(6, ow);
@@ -203,7 +203,7 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
         ((GLBackend *)backend())->compute(UP_DIV(ow, mIm2colSize[0]), UP_DIV(oh, mIm2colSize[1]), UP_DIV(ic_4*ib, mIm2colSize[2]));
         OPENGL_CHECK_ERROR;
     }
-    
+
     //gemm
     {
         mGemm16x16Program->useProgram();
@@ -221,7 +221,7 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
         ((GLBackend *)backend())->compute(UP_DIV(obxohxow_4, mGemmSize[0]), UP_DIV(oc_4, mGemmSize[1]), 1);
         OPENGL_CHECK_ERROR;
     }
-    
+
     //col2image
     {
         mCol2ImProgram->useProgram();
@@ -241,9 +241,9 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
         ((GLBackend *)backend())->compute(UP_DIV(ow, mCol2imSize[0]), UP_DIV(oh, mCol2imSize[1]), UP_DIV(oc_4*ob, mCol2imSize[2]));
         OPENGL_CHECK_ERROR;
     }
-        
+
     return NO_ERROR;
 }
-    
+
 } // namespace OpenGL
 } // namespace MNN

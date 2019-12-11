@@ -7,7 +7,7 @@
 //
 
 #include "ReluGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN;
 
@@ -17,7 +17,7 @@ public:
         mType = SEMI_LINEAR;
     }
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<Express::VARP> result{nullptr};
+        std::vector<Express::VARP> result(1, nullptr);
 
         unique_ptr<OpT> newOp(new OpT);
         newOp->type          = OpType_ReluGrad;
@@ -25,6 +25,7 @@ public:
         newOp->main.value    = new ReluT;
         
         result[0] = Express::Variable::create(Express::Expr::create(std::move(newOp), {expr->inputs()[0], backwardOutput[0]}));
+        result[0]->setName(expr->name() + "_Grad");
 
         return result;
     }
@@ -41,6 +42,7 @@ public:
         newOp->type          = OpType_Relu6Grad;
         newOp->main.type     = OpParameter_NONE;
         result[0] = Express::Variable::create(Express::Expr::create(std::move(newOp), {expr->inputs()[0], backwardOutput[0]}));
+        result[0]->setName(expr->name() + "_Grad");
         return result;
     }
 };

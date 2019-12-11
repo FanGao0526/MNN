@@ -11,8 +11,6 @@
 #include <mutex>
 #include <string>
 
-#include "CONFIGURECONVERT.h"
-
 class ProjectConfig {
 public:
     static const std::string version;

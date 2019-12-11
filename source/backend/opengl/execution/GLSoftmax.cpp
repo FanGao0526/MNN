@@ -6,11 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLSoftmax.hpp"
+#include "backend/opengl/GLSoftmax.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
@@ -22,9 +22,9 @@ GLSoftmax::GLSoftmax(const std::vector<Tensor *> &inputs, const Op *op, Backend 
 }
 
 GLSoftmax::~GLSoftmax() {
-    
+
 }
-    
+
 ErrorCode GLSoftmax::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input = inputs[0];
     auto output = outputs[0];
@@ -49,22 +49,22 @@ ErrorCode GLSoftmax::onExecute(const std::vector<Tensor *> &inputs, const std::v
 
     auto input  = inputs[0];
     auto output = outputs[0];
-    
+
     std::vector<int> inputShape  = tensorShapeFormat(input);
     std::vector<int> outputShape = tensorShapeFormat(output);
-    
+
     int ib = inputShape.at(0);
     int ih = inputShape.at(1);
     int iw = inputShape.at(2);
     int ic = inputShape.at(3);
     int ic_4 = UP_DIV(ic, 4);
-    
+
     int ob = outputShape.at(0);
     int oh = outputShape.at(1);
     int ow = outputShape.at(2);
     int oc = outputShape.at(3);
     int oc_4 = UP_DIV(oc, 4);
-    
+
     // NC4HW4 input
     mProgram->useProgram();
     glBindImageTexture(0, output->deviceId(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
@@ -88,10 +88,10 @@ ErrorCode GLSoftmax::onExecute(const std::vector<Tensor *> &inputs, const std::v
     } else {
         MNN_ASSERT(false);
     }
-    
+
     return NO_ERROR;
 }
-    
+
 class SoftmaxCreator : public GLBackend::Creator {
 public:
     virtual ~SoftmaxCreator() = default;

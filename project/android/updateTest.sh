@@ -15,3 +15,4 @@ adb push ./testModelWithDescrisbe.out /data/local/tmp/MNN/testModelWithDescrisbe
 adb push ./backendTest.out /data/local/tmp/MNN/backendTest.out
 adb push ./timeProfile.out /data/local/tmp/MNN/timeProfile.out
 
+adb push ./train.out /data/local/tmp/MNN/train.out

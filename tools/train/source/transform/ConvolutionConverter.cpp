@@ -7,8 +7,8 @@
 //
 
 #include "ConvolutionConverter.hpp"
-#include "Macro.h"
-#include "Tensor.hpp"
+#include "core/Macro.h"
+#include <MNN/Tensor.hpp>
 using namespace MNN;
 
 OpConverter::ReductResult ConvolutionConverter::onReduct(int opIndex, MNN::OpT* op, MNN::NetT* net) {

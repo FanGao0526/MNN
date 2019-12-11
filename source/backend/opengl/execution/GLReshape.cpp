@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLReshape.hpp"
+#include "backend/opengl/GLReshape.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
@@ -20,15 +20,15 @@ GLReshape::GLReshape(const std::vector<Tensor *> &inputs, const Op *op, Backend 
 }
 
 GLReshape::~GLReshape() {
-    
+
 }
-    
+
 ErrorCode GLReshape::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     std::vector<std::string> prefix;
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
     mTempBuffer.reset(new GLSSBOBuffer(inputs[0]->size()));
     auto input = inputs[0];
-    
+
     if (mDimType == MNN_DATA_FORMAT_NCHW) {
         mSrcProgram = ((GLBackend *)backend())->getProgram("src", glsl_image_to_nchw_buffer_glsl, prefix);
         mDstProgram = ((GLBackend *)backend())->getProgram("dst", glsl_nchw_buffer_to_image_glsl, prefix);
@@ -36,7 +36,7 @@ ErrorCode GLReshape::onResize(const std::vector<Tensor *> &inputs, const std::ve
         mSrcProgram = ((GLBackend *)backend())->getProgram("src", glsl_image_to_nhwc_buffer_glsl, prefix);
         mDstProgram = ((GLBackend *)backend())->getProgram("dst", glsl_nhwc_buffer_to_image_glsl, prefix);
     }
-    
+
     return NO_ERROR;
 }
 
@@ -52,7 +52,7 @@ ErrorCode GLReshape::onExecute(const std::vector<Tensor *> &inputs, const std::v
     int iw = inputShape.at(2);
     int ic = inputShape.at(3);
     int ic_4 = UP_DIV(ic, 4);
-    
+
     int ob = outputShape.at(0);
     int oh = outputShape.at(1);
     int ow = outputShape.at(2);
@@ -109,16 +109,16 @@ ErrorCode GLReshape::onExecute(const std::vector<Tensor *> &inputs, const std::v
             OPENGL_CHECK_ERROR;
         }
     }
-    
+
     return NO_ERROR;
 }
-    
+
 class ReshapeCreator : public GLBackend::Creator {
 public:
     virtual ~ReshapeCreator() = default;
     virtual Execution *onCreate(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs,
                                 const MNN::Op *op, Backend *backend) const override {
-        
+
         if(inputs[0]->dimensions() == 3 || outputs[0]->dimensions() == 3){
             MNN_PRINT("reshape not support dimensions == 3 \n");
             return nullptr;

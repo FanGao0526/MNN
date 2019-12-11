@@ -7,7 +7,7 @@
 //
 
 #include "ConvGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN::Express;
 using namespace MNN;
@@ -16,12 +16,12 @@ class ConvGrad : public OpGrad {
 public:
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
         auto inputs = expr->inputs();
+        std::vector<VARP> res(inputs.size(), nullptr);
         if (inputs.size() < 3) {
-            return std::vector<Express::VARP>{};
+            return res;
         }
+        auto forwardName = expr->name();
         std::shared_ptr<OpT> forwardOp(expr->get()->UnPack());
-        std::vector<VARP> res;
-        res.resize(inputs.size());
         auto outputDiff = backwardOutput[0];
         {
             // Create Input Grad
@@ -45,7 +45,7 @@ public:
 
             auto expr = Expr::create(std::move(newOp), {outputDiff, inputs[1], newConstBias});
             res[0] = Variable::create(expr);
-            res[0]->setName(forwardOp->name + "_Input_Grad");
+            res[0]->setName(forwardName + "_Input_Grad");
         }
         // Add Filter Grad
         {
@@ -57,13 +57,13 @@ public:
             newOp->main.value = conv2D;
             auto expr = Expr::create(std::move(newOp), {inputs[1], inputs[0], outputDiff});
             res[1] = Variable::create(expr);
-            res[1]->setName(forwardOp->name + "_Filter_Grad");
+            res[1]->setName(forwardName + "_Filter_Grad");
         }
         // Add Bias Grad
         {
             auto gradConvert = _Convert(outputDiff, NHWC);
-            res[2] = _Sum(gradConvert, {0, 1, 2});
-            res[2]->setName(forwardOp->name + "_Bias_Grad");
+            res[2] = _ReduceSum(gradConvert, {0, 1, 2});
+            res[2]->setName(forwardName + "_Bias_Grad");
         }
         return res;
     }

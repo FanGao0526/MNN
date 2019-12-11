@@ -8,8 +8,8 @@
 
 #ifndef OpConverter_hpp
 #define OpConverter_hpp
-#include "Expr.hpp"
-#include "MNNDefine.h"
+#include <MNN/expr/Expr.hpp>
+#include <MNN/MNNDefine.h>
 #include "MNN_generated.h"
 
 class MNN_PUBLIC OpConverter {

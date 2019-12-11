@@ -13,18 +13,30 @@
 #include <sstream>
 #include <stack>
 #include <string>
-#include "Interpreter.hpp"
+#include <MNN/Interpreter.hpp>
 #include "OpConverter.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 #include "OpGrad.hpp"
-#include "ExprCreator.hpp"
+#include <MNN/expr/ExprCreator.hpp>
 #define MNN_OPEN_TIME_TRACE
-#include "AutoTime.hpp"
+#include <MNN/AutoTime.hpp>
 #include "rapidjson/document.h"
 
 using namespace MNN;
 using namespace MNN::Express;
 using namespace std;
+
+static void constToTrainableParam(EXPRP expr) {
+    auto constOpT = expr->get()->UnPack();
+    auto constBlobT = constOpT->main.AsBlob();
+
+    std::unique_ptr<OpT> op(new OpT);
+    op->type       = OpType_TrainableParam;
+    op->main.type  = OpParameter_Blob;
+    op->main.value = new BlobT(*constBlobT);
+
+    expr->set(op.get());
+}
 
 int main(int argc, const char* argv[]) {
     if (argc < 4) {
@@ -61,7 +73,7 @@ int main(int argc, const char* argv[]) {
     const char* inputModeFileName = argv[1];
     FUNC_PRINT_ALL(inputModeFileName, s);
     auto inputsOutputs = Variable::getInputAndOutput(Variable::loadMap(argv[1]));
-    auto variables = Variable::getExecuteOrder(Variable::mapToSequence( inputsOutputs.second));
+    auto exprs = Variable::getExecuteOrder(Variable::mapToSequence(inputsOutputs.second));
     if (configObject.HasMember("Shape")) {
         auto shapeArray = configObject["Shape"].GetObject();
         for (auto shapeIter = shapeArray.begin(); shapeIter != shapeArray.end(); shapeIter++) {
@@ -72,9 +84,10 @@ int main(int argc, const char* argv[]) {
             }
             FUNC_PRINT_ALL(shapeIter->name.GetString(), s);
             std::string key = shapeIter->name.GetString();
-            for (auto& var : variables) {
+            for (auto& var : exprs) {
                 if (var->name() == key) {
-                    var->resize(dims);
+                    auto tempVar = Variable::create(var);
+                    tempVar->resize(dims);
                     break;
                 }
             }
@@ -83,20 +96,27 @@ int main(int argc, const char* argv[]) {
     {
         AUTOTIME;
         // Turn convolution be trainable convolution
-        for (auto current : variables) {
-            auto expr    = current->expr();
-            FUNC_PRINT_ALL(expr.first->name().c_str(), s);
-            expr.first = OpConverter::convert(expr.first);
-            Variable::setExpr(current, expr.first, expr.second);
+        for (auto expr : exprs) {
+            FUNC_PRINT_ALL(expr->name().c_str(), s);
+            auto newExpr = OpConverter::convert(expr);
+            if (newExpr.get() != expr.get()) {
+                auto outputs = expr->outputs();
+                for (auto o : outputs) {
+                    auto var = o.lock();
+                    if (nullptr != var) {
+                        Variable::setExpr(var, newExpr, var->expr().second);
+                    }
+                }
+            }
         }
     }
-    variables = Variable::getExecuteOrder(Variable::mapToSequence(inputsOutputs.second));
+    exprs = Variable::getExecuteOrder(Variable::mapToSequence(inputsOutputs.second));
 
-    // Collect Const Variable
+    // Collect trainable param (note: trainable param must be leaf node)
     std::set<EXPRP> updateExprs;
-    for (auto v : variables) {
-        if (v->expr().first->get()->type() == OpType_Const) {
-            auto name = v->name();
+    for (auto expr : exprs) {
+        if (expr->get()->type() == OpType_Const) {
+            auto name = expr->name();
             bool match = variableLimits.empty();
             for (auto limit : variableLimits) {
                 if (name.find(limit) != std::string::npos) {
@@ -106,11 +126,12 @@ int main(int argc, const char* argv[]) {
             }
             if (match) {
                 MNN_PRINT("Add Variable: %s\n", name.c_str());
-                updateExprs.insert(v->expr().first);
+                constToTrainableParam(expr);
+                updateExprs.insert(expr);
             }
         }
     }
-    
+
     VARP loss;
     bool hasLoss      = configObject.HasMember("Loss");
     if (!hasLoss) {
@@ -126,29 +147,29 @@ int main(int argc, const char* argv[]) {
         auto outputReal = _Input(outputShape->dim, outputShape->order);
         outputReal->setName(output->name() + "_Compare");
 #ifdef USE_ELU
-        auto sub = _Sub(output, outputReal);
+        auto sub = _Subtract(output, outputReal);
         sub->setName(output->name() + "_Sub");
-        loss = (_Sum(_Mul(sub, sub), {}));
+        loss = (_ReduceSum(_Multiply(sub, sub), {}));
 #else
-        auto mul = _Mul(_Log(output), outputReal);
+        auto mul = _Multiply(_Log(output), outputReal);
         mul->setName(output->name() + "_Mul");
-        loss = _Neg(_Sum(mul, {}));
+        loss = _Negative(_ReduceSum(mul, {}));
 #endif
         auto l2 = _Const(0.0f);
         for (auto expr : updateExprs) {
             auto var = expr->outputs().begin()->lock();
             MNN_ASSERT(nullptr != var);
-            l2 = _Add(l2, _Sum(_Mul(var, var), {}));
+            l2 = _Add(l2, _ReduceSum(_Multiply(var, var), {}));
         }
-        loss = _Add(loss, _Mul(l2, _Const(0.0005f)));
+        loss = _Add(loss, _Multiply(l2, _Const(0.0005f)));
         loss->setName("Loss");
         inputsOutputs.second.insert(std::make_pair("Loss", loss));
-        variables = Variable::getExecuteOrder(Variable::mapToSequence( inputsOutputs.second));
+        exprs = Variable::getExecuteOrder(Variable::mapToSequence( inputsOutputs.second));
     } else {
-        for (auto v : variables) {
-            auto name = v->expr().first->get()->name()->str();
-            if (name == configObject["Loss"].GetObject()["op"].GetString()) {
-                loss = v;
+        for (auto expr : exprs) {
+            std::unique_ptr<OpT> opT(expr->get()->UnPack());
+            if (opT->name == configObject["Loss"].GetObject()["op"].GetString()) {
+                loss = Variable::create(expr);
                 break;
             }
         }
@@ -164,16 +185,10 @@ int main(int argc, const char* argv[]) {
     {
         AUTOTIME;
         std::map<EXPRP, int> exprRef;
-        std::set<EXPRP> exprSet;
         std::stack<EXPRP> exprExecuteOrder;
         std::map<EXPRP, std::vector<bool>> exprExecuted;
-        for (auto v : variables) {
-            auto express = v->expr().first;
-            if (exprSet.find(express) != exprSet.end()) {
-                continue;
-            }
-            exprExecuteOrder.push(express);
-            exprSet.insert(express);
+        for (auto expr : exprs) {
+            exprExecuteOrder.push(expr);
         }
         while (!exprExecuteOrder.empty()) {
             auto expr = exprExecuteOrder.top();
@@ -232,11 +247,12 @@ int main(int argc, const char* argv[]) {
         auto originVar = expr->outputs();
         auto var = originVar.begin()->lock();
         MNN_ASSERT(nullptr != var);
-        vars[0] = _Sub(var, _Mul(vars[0], learningRate));
+        vars[0] = _Subtract(var, _Multiply(vars[0], learningRate));
         vars[0]->setName("update_" + var->name());
         varUpdateMap[var] = vars[0];
     }
     std::unique_ptr<MNN::NetT> netStruct(new MNN::NetT);
+    netStruct->usage = Usage_TRAIN;
     std::vector<VARP> resultOutputs{loss};
     for (auto output : inputsOutputs.second) {
         resultOutputs.emplace_back(output.second);
@@ -267,6 +283,6 @@ int main(int argc, const char* argv[]) {
         fwrite(builder.GetBufferPointer(), 1, builder.GetSize(), f);
         fclose(f);
     }
-    
+
     return 0;
 }

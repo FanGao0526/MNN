@@ -8,11 +8,11 @@
 
 #include <algorithm>
 #include <array>
-#include "CPUStridedSlice.hpp"
-#include "CommonOptFunction.h"
-#include "Macro.h"
-#include "SizeComputer.hpp"
-#include "TensorUtils.hpp"
+#include "backend/cpu/CPUStridedSlice.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "core/Macro.h"
+#include "core/SizeComputer.hpp"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 class StridedSliceComputer : public SizeComputer {

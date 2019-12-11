@@ -13,8 +13,7 @@
 namespace MNN {
 namespace Express {
 static auto gRegister = []() {
-    auto compare = [](VARP var) {
-        auto expr = var->expr().first;
+    auto compare = [](EXPRP expr) {
         if (expr->get()->type() != OpType_SliceTf) {
             return false;
         }
@@ -38,10 +37,9 @@ static auto gRegister = []() {
         }
         return true;
     };
-    auto modify = [](VARP var) {
-        auto expr = var->expr().first;
+    auto modify = [](EXPRP expr) {
         auto inputs = expr->inputs();
-        auto outputs = var->expr().first->outputs();
+        auto outputs = expr->outputs();
         for (auto weakVar : outputs) {
             auto var = weakVar.lock();
             if (nullptr == var) {

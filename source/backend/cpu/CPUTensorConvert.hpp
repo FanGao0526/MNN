@@ -9,7 +9,7 @@
 #ifndef CPUTensorConvert_hpp
 #define CPUTensorConvert_hpp
 
-#include "Execution.hpp"
+#include "core/Execution.hpp"
 #include "Tensor_generated.h"
 
 namespace MNN {

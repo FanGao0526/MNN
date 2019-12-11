@@ -6,7 +6,7 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "Macro.h"
+#include "core/Macro.h"
 #include "OpGrad.hpp"
 using namespace std;
 using namespace MNN;
@@ -15,9 +15,8 @@ using namespace MNN::Express;
 class ReduceGrad : public OpGrad {
 public:
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<Express::VARP> result;
         auto inputs = expr->inputs();
-        result.resize(inputs.size());
+        std::vector<Express::VARP> result(inputs.size(), nullptr);
         std::unique_ptr<OpT> forwardOp(expr->get()->UnPack());
         std::vector<int> dim = forwardOp->main.AsReductionParam()->dim;
         auto keepDim = forwardOp->main.AsReductionParam()->keepDims;
@@ -40,23 +39,24 @@ public:
             VARP init;
             {
                 unique_ptr<OpT> newOp(new OpT);
-                newOp->name          = forwardOp->name + "__Zero";
                 newOp->type          = OpType_ZerosLike;
                 init = Variable::create(Expr::create(std::move(newOp), {inputs[0]}));
+                init->setName(expr->name() + "__Zero");
             }
             auto outputDiff    = backwardOutput[0];
             auto currentOutput = outputDiff;
             if (!keepDim) {
                 // Create Unsqueeze Op
                 unique_ptr<OpT> newOp(new OpT);
-                newOp->name                               = forwardOp->name + "__Unsqueeze";
                 newOp->type                               = OpType_Unsqueeze;
                 newOp->main.type                          = OpParameter_SqueezeParam;
                 newOp->main.value                         = new SqueezeParamT;
                 newOp->main.AsSqueezeParam()->squeezeDims = dim;
                 outputDiff = Variable::create(Expr::create(std::move(newOp), {outputDiff}));
+                outputDiff->setName(expr->name() + "__Unsqueeze");
             }
             result[0] = _Add(init, outputDiff);
+            result[0]->setName(expr->name() + "_Grad");
         }
         return result;
     }

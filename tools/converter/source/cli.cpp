@@ -16,6 +16,7 @@
 #endif
 #include "config.hpp"
 #include "logkit.h"
+#include <MNN/VCS.h>
 
 /**
  *  Print Command Line Banner
@@ -53,7 +54,7 @@ cxxopts::Options Cli::initializeMNNConvertArgs(modelConfig &modelPath, int argc,
         }
 
         if (result.count("version")) {
-            std::cout << PROJECT_VERSION << std::endl;
+            std::cout <<"\tVersion:"<<ProjectConfig::version<<std::endl<<"\tURL:"<<MNN_REPOSITORY<<std::endl<<"\tRevision:"<<MNN_REVISION<< std::endl;
             exit(EXIT_SUCCESS);
         }
 
@@ -139,7 +140,7 @@ cxxopts::Options Cli::initializeMNNConvertArgs(modelConfig &modelPath, int argc,
         if(result.count("fp16")){
             modelPath.saveHalfFloat = true;
         }
-        
+
     } catch (const cxxopts::OptionException &e) {
         std::cerr << "Error while parsing options! " << std::endl;
         std::cerr << e.what() << std::endl;

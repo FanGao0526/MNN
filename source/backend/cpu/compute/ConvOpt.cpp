@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "ConvOpt.h"
+#include "backend/cpu/compute/ConvOpt.h"
 #include <algorithm>
-#include "Macro.h"
-#include "Vec4.hpp"
+#include "core/Macro.h"
+#include "math/Vec4.hpp"
 using namespace MNN::Math;
 #ifndef MNN_USE_NEON
 #ifndef MNN_USE_SSE

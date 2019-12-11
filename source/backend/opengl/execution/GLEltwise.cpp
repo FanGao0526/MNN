@@ -6,11 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLEltwise.hpp"
+#include "backend/opengl/GLEltwise.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
 namespace MNN {
 namespace OpenGL {
 GLEltwise::GLEltwise(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) : Execution(bn) {

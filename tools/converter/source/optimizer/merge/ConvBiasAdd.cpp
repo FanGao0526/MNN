@@ -13,8 +13,7 @@
 namespace MNN {
 namespace Express {
 static auto gRegister = []() {
-    auto compare = [](VARP var) {
-        auto expr = var->expr().first;
+    auto compare = [](EXPRP expr) {
         if (expr->get()->type() != OpType_BinaryOp) {
             return false;
         }
@@ -40,8 +39,7 @@ static auto gRegister = []() {
         }
         return true;
     };
-    auto modify = [](VARP var) {
-        auto expr = var->expr().first;
+    auto modify = [](EXPRP expr) {
         auto inputs = expr->inputs();
         auto inputExpr = inputs[0]->expr().first;
         auto biasVar = inputs[1];
@@ -54,8 +52,8 @@ static auto gRegister = []() {
             biasData[i] += biasPtr[i];
         }
         auto newExpr = Expr::create(convOp.get(), inputExpr->inputs());
-        newExpr->setName(var->expr().first->name());
-        auto outputs = var->expr().first->outputs();
+        newExpr->setName(expr->name());
+        auto outputs = expr->outputs();
         for (auto weakVar : outputs) {
             auto var = weakVar.lock();
             if (nullptr == var) {

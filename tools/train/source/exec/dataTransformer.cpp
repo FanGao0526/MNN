@@ -8,8 +8,8 @@
 
 #include <fstream>
 #include <sstream>
-#include "ImageProcess.hpp"
-#include "Interpreter.hpp"
+#include <MNN/ImageProcess.hpp>
+#include <MNN/Interpreter.hpp>
 #include "MNN_generated.h"
 #include "rapidjson/document.h"
 using namespace MNN;

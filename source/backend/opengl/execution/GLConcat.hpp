@@ -9,9 +9,9 @@
 #ifndef MNN_GLCONCAT_H
 #define MNN_GLCONCAT_H
 
-#include "Execution.hpp"
-#include "GLProgram.hpp"
-#include "GLTexture.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLProgram.hpp"
+#include "backend/opengl/GLTexture.hpp"
 namespace MNN {
 namespace OpenGL {
 class GLConcat : public Execution {

@@ -8,7 +8,7 @@
 
 #include <random>
 #include <math.h>
-#include "ExprCreator.hpp"
+#include <MNN/expr/ExprCreator.hpp>
 #include "MNNTestSuite.h"
 #include "MNN_generated.h"
 using namespace MNN::Express;
@@ -55,7 +55,7 @@ public:
             auto matmulParam = op->main.AsMatMul();
             matmulParam->transposeA = false;
             matmulParam->transposeB = false;
-            
+
             auto x0 = _Input({}, NHWC, halide_type_of<float>());
             auto x1 = _Input({}, NHWC, halide_type_of<float>());
             auto y = Variable::create(Expr::create(op.get(), {x0, x1}));
@@ -63,7 +63,7 @@ public:
             x1->resize({l, e});
             fillFloat(x0->writeMap<float>(), h, l);
             fillFloat(x1->writeMap<float>(), l, e);
-            
+
             auto res = checkMatMul(y->readMap<float>(), x0->readMap<float>(), x1->readMap<float>(), e, l, h);
             if (!res) {
                 FUNC_PRINT(1);
@@ -104,7 +104,7 @@ public:
             auto param = op->main.AsBatchMatMulParam();
             param->adjX = false;
             param->adjY = false;
-            
+
             int batch = 5;
             auto x0 = _Input({}, NHWC, halide_type_of<float>());
             auto x1 = _Input({}, NHWC, halide_type_of<float>());
@@ -126,7 +126,7 @@ public:
                 }
             }
         }
-        
+
         return true;
     }
 };

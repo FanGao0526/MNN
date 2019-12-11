@@ -17,9 +17,8 @@ public:
         mType = LINEAR;
     }
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<Express::VARP> res;
         auto inputs = expr->inputs();
-        res.resize(inputs.size());
+        std::vector<Express::VARP> res(inputs.size(), nullptr);
         auto outputDiff = backwardOutput[0];
         
         {
@@ -45,6 +44,8 @@ public:
             auto expr = Expr::create(std::move(newOp), {inputs[0], outputDiff});
             res[1] = Variable::create(expr);
         }
+        res[0]->setName(expr->name() + "_Input_0_Grad");
+        res[1]->setName(expr->name() + "_Input_1_Grad");
         return res;
     }
 };

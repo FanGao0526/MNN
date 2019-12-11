@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUDeconvolutionDepthwise.hpp"
+#include "backend/cpu/CPUDeconvolutionDepthwise.hpp"
 #include <string.h>
-#include "CPUBackend.hpp"
+#include "backend/cpu/CPUBackend.hpp"
 #include "MNN_generated.h"
-#include "Macro.h"
-#include "compute/ConvOpt.h"
+#include "core/Macro.h"
+#include "backend/cpu/compute/ConvOpt.h"
 
 namespace MNN {
 CPUDeconvolutionDepthwise::CPUDeconvolutionDepthwise(const Tensor* input, const Op* convOp, Backend* b)

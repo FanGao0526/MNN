@@ -7,7 +7,7 @@
 //
 
 #include "SelectGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN;
 using namespace MNN::Express;
@@ -34,13 +34,13 @@ public:
             auto maskVar = Variable::create(Expr::create(std::move(mask), {inputs[0]}));
 
             // da * (x>0)
-            result[1] = _Mul(outputDiff, maskVar);
+            result[1] = _Multiply(outputDiff, maskVar);
 
             // db * -((x>0)-1)
             auto one = _Const(1.0f);
-            auto sub = _Sub(maskVar, one);
-            auto neg = _Neg(sub);
-            result[2] = _Mul(outputDiff, neg);
+            auto sub = _Subtract(maskVar, one);
+            auto neg = _Negative(sub);
+            result[2] = _Multiply(outputDiff, neg);
 
         }
 

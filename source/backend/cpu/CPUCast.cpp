@@ -6,8 +6,8 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUCast.hpp"
-#include "Macro.h"
+#include "backend/cpu/CPUCast.hpp"
+#include "core/Macro.h"
 
 namespace MNN {
 

@@ -7,7 +7,7 @@
 //
 
 #include "ReshapeGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN;
 using namespace MNN::Express;
@@ -15,9 +15,8 @@ using namespace MNN::Express;
 class ReshapeGrad : public OpGrad {
 public:
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<VARP> result;
         auto inputs = expr->inputs();
-        result.resize(inputs.size());
+        std::vector<VARP> result(inputs.size(), nullptr);
         // Create Shape Op and Tensor
         unique_ptr<OpT> newOp(new OpT);
         newOp->type          = OpType_Shape;
@@ -25,6 +24,7 @@ public:
 
         // Create Reshape Op
         result[0] = _Reshape(backwardOutput[0], shape);
+        result[0]->setName(expr->name() + "_Grad");
         return result;
     }
 };

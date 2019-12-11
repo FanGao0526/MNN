@@ -10,12 +10,12 @@
 #define MNNDEMO_GLCONVOLUTION_H
 
 #include <functional>
-#include "Execution.hpp"
-#include "GLProgram.hpp"
-#include "GLSSBOBuffer.hpp"
-#include "GLTexture.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLProgram.hpp"
+#include "backend/opengl/GLSSBOBuffer.hpp"
+#include "backend/opengl/GLTexture.hpp"
+#include "backend/opengl/GLBackend.hpp"
 #include "MNN_generated.h"
-#include "GLBackend.hpp"
 
 namespace MNN {
 namespace OpenGL {

@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLUnary.hpp"
+#include "backend/opengl/GLUnary.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
@@ -20,9 +20,9 @@ GLUnary::GLUnary(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn)
 }
 
 GLUnary::~GLUnary() {
-    
+
 }
-    
+
 ErrorCode GLUnary::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     std::vector<std::string> prefix;
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
@@ -37,7 +37,7 @@ ErrorCode GLUnary::onResize(const std::vector<Tensor *> &inputs, const std::vect
 }
 
 ErrorCode GLUnary::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
-    
+
     auto input = inputs[0];
     auto output  = outputs[0];
 
@@ -65,7 +65,7 @@ ErrorCode GLUnary::onExecute(const std::vector<Tensor *> &inputs, const std::vec
 
     return NO_ERROR;
 }
-    
+
 class UnaryCreator : public GLBackend::Creator {
 public:
     virtual ~UnaryCreator() = default;
@@ -78,7 +78,7 @@ public:
             MNN_PRINT("Not Supported Unary Operation: %d\n", type);
             return nullptr;
         }
-        
+
     }
 };
 GLCreatorRegister<UnaryCreator> __unary_op(OpType_UnaryOp);

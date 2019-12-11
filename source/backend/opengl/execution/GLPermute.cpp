@@ -6,17 +6,17 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLPermute.hpp"
+#include "backend/opengl/GLPermute.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
 GLPermute::GLPermute(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) : Execution(bn) {
-    
+
     auto newDim = op->main_as_Permute()->dims();
     for (int i = 0; i < newDim->size(); ++i) {
         mDims.push_back(newDim->data()[i]);
@@ -24,9 +24,9 @@ GLPermute::GLPermute(const std::vector<Tensor *> &inputs, const Op *op, Backend 
 }
 
 GLPermute::~GLPermute() {
-    
+
 }
-    
+
 ErrorCode GLPermute::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input = inputs[0];
     auto output = outputs[0];
@@ -34,7 +34,7 @@ ErrorCode GLPermute::onResize(const std::vector<Tensor *> &inputs, const std::ve
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
     mSrcBuffer.reset(new GLSSBOBuffer(input->size()));
     mDstBuffer.reset(new GLSSBOBuffer(output->size()));
-    
+
     mPermuteProgram = ((GLBackend *)backend())->getProgram("permute", glsl_permute_glsl, prefix);
     mSrcProgram = ((GLBackend *)backend())->getProgram("src", glsl_image_to_nchw_buffer_glsl, prefix);
     mDstProgram = ((GLBackend *)backend())->getProgram("dst", glsl_nchw_buffer_to_image_glsl, prefix);
@@ -50,13 +50,13 @@ ErrorCode GLPermute::onExecute(const std::vector<Tensor *> &inputs, const std::v
     int ic = input->channel();
     int ib = input->batch();
     int ic_4 = UP_DIV(ic, 4);
-    
+
     int oh = output->height();
     int ow = output->width();
     int oc = output->channel();
     int ob = output->batch();
     int oc_4 = UP_DIV(oc, 4);
-    
+
     //image -> buffer(nchw)
     {
         mSrcProgram->useProgram();
@@ -68,7 +68,7 @@ ErrorCode GLPermute::onExecute(const std::vector<Tensor *> &inputs, const std::v
         ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
         OPENGL_CHECK_ERROR;
     }
-    
+
     //do permute
     {
         mPermuteProgram->useProgram();
@@ -93,7 +93,7 @@ ErrorCode GLPermute::onExecute(const std::vector<Tensor *> &inputs, const std::v
         ((GLBackend *)backend())->compute(UP_DIV(ow, mLocalSize[0]), UP_DIV(oh, mLocalSize[1]), UP_DIV(oc_4, mLocalSize[2]));
         OPENGL_CHECK_ERROR;
     }
-    
+
     return NO_ERROR;
 }
 GLCreatorRegister<TypedCreator<GLPermute>> __permute_op(OpType_Permute);

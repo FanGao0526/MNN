@@ -37,6 +37,7 @@ const std::set<MNN::OpType> NC4HW4_OPs = {
     MNN::OpType_QuantizedAvgPool,
     MNN::OpType_QuantizedAdd,
     MNN::OpType_PReLU,
+    MNN::OpType_Dilation2D,
 };
 const std::set<MNN::OpType> COMPABILITY_OPs = {MNN::OpType_ReLU,          MNN::OpType_ReLU6,   MNN::OpType_Concat,
                                                MNN::OpType_Slice,         MNN::OpType_Permute, MNN::OpType_Selu,

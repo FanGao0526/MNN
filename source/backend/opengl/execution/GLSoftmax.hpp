@@ -8,11 +8,11 @@
 
 #ifndef GLSoftmax_H
 #define GLSoftmax_H
-#include "Execution.hpp"
-#include "GLProgram.hpp"
-#include "GLTexture.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "backend/opengl/GLProgram.hpp"
+#include "backend/opengl/GLTexture.hpp"
 #include "MNN_generated.h"
-#include "GLBackend.hpp"
 namespace MNN {
 namespace OpenGL {
 class GLSoftmax : public MNN::Execution {

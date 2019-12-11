@@ -6,15 +6,15 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "ConvolutionTiledExecutor.hpp"
-#include "AutoTime.hpp"
-#include "CPUBackend.hpp"
-#include "CommonOptFunction.h"
-#include "Concurrency.h"
-#include "ConvOpt.h"
-#include "Macro.h"
-#include "TensorUtils.hpp"
-#include "Vec4.hpp"
+#include "backend/cpu/compute/ConvolutionTiledExecutor.hpp"
+#include <MNN/AutoTime.hpp>
+#include "backend/cpu/CPUBackend.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "core/Concurrency.h"
+#include "backend/cpu/compute/ConvOpt.h"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
+#include "math/Vec4.hpp"
 
 namespace MNN {
 ErrorCode ConvolutionTiledExecutorMultiInput::onExecute(const std::vector<Tensor*>& inputs,

@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLBinary.hpp"
+#include "backend/opengl/GLBinary.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
@@ -20,9 +20,9 @@ GLBinary::GLBinary(const std::vector<Tensor *> &inputs, const Op *op, Backend *b
 }
 
 GLBinary::~GLBinary() {
-    
+
 }
-    
+
 ErrorCode GLBinary::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     std::vector<std::string> prefix;
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
@@ -47,31 +47,31 @@ ErrorCode GLBinary::onResize(const std::vector<Tensor *> &inputs, const std::vec
 ErrorCode GLBinary::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     MNN_ASSERT(2 == inputs.size());
     MNN_ASSERT(1 == outputs.size());
-    
+
     auto input0 = inputs[0];
     auto input1 = inputs[1];
     auto output  = outputs[0];
-    
+
     std::vector<int> inputShape  = tensorShapeFormat(input0);
     std::vector<int> outputShape = tensorShapeFormat(output);
-    
+
     int ib = inputShape.at(0);
     int ih = inputShape.at(1);
     int iw = inputShape.at(2);
     int ic = inputShape.at(3);
     int ic_4 = UP_DIV(ic, 4);
-    
+
     int ob = outputShape.at(0);
     int oh = outputShape.at(1);
     int ow = outputShape.at(2);
     int oc = outputShape.at(3);
     int oc_4 = UP_DIV(oc, 4);
-    
+
     MNN_ASSERT(input0->getType().code == halide_type_float);
     MNN_ASSERT(input0->dimensions() == input1->dimensions());
 
     const auto intputFormat = TensorUtils::getDescribe(input0)->dimensionFormat;
- 
+
     mProgram->useProgram();
     glBindImageTexture(0, output->deviceId(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
     {
@@ -94,13 +94,13 @@ ErrorCode GLBinary::onExecute(const std::vector<Tensor *> &inputs, const std::ve
 
     return NO_ERROR;
 }
-    
+
 class BinaryCreator : public GLBackend::Creator {
 public:
     virtual ~BinaryCreator() = default;
     virtual Execution *onCreate(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs,
                                 const MNN::Op *op, Backend *backend) const override {
-        
+
         MNN_ASSERT(inputs.size() > 1);
         auto input0 = inputs[0];
         // Don't support broatcast
@@ -120,7 +120,7 @@ public:
                 }
             }
         }
-        
+
         return new GLBinary(inputs, op, backend);
     }
 };

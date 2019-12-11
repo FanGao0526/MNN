@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLPool.hpp"
+#include "backend/opengl/GLPool.hpp"
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
 namespace MNN {
 namespace OpenGL {
 ErrorCode GLPool::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {

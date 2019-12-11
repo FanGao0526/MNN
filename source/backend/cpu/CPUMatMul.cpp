@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUMatMul.hpp"
-#include "CPUBackend.hpp"
-#include "Matrix.hpp"
-#include "compute/CommonOptFunction.h"
-#include "compute/StrassenMatmulComputor.hpp"
-#include "Macro.h"
+#include "backend/cpu/CPUMatMul.hpp"
+#include "backend/cpu/CPUBackend.hpp"
+#include "math/Matrix.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "backend/cpu/compute/StrassenMatmulComputor.hpp"
+#include "core/Macro.h"
 namespace MNN {
 
 CPUMatMul::CPUMatMul(Backend* backend, bool transposeA, bool transposeB)

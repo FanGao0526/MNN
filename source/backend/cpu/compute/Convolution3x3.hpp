@@ -9,8 +9,8 @@
 #ifndef Convolution3x3_hpp
 #define Convolution3x3_hpp
 
-#include "CPUConvolution.hpp"
-#include "ConvolutionFloatFactory.h"
+#include "backend/cpu/CPUConvolution.hpp"
+#include "backend/cpu/compute/ConvolutionFloatFactory.h"
 
 namespace MNN {
 class Convolution3x3 : public CPUConvolution {

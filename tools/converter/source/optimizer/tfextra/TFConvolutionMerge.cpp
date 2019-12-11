@@ -21,7 +21,10 @@ static bool _writeCommonAttr(Convolution2DCommonT* common, const Extra* extra, c
         auto attr = extra->attr()->GetAs<Attribute>(v);
         const auto key = attr->key()->str();
         auto list = attr->list();
-        if (key == "rate") {
+        // "rates" for tf.nn.atrous_conv2d
+        // "dilations" for tf.nn.conv2d or tf.nn.dilation2d or tf.nn.conv2d_transpose
+        // "rate" has been here when I change the code, so I reserve it though I don't know where use it
+        if (key == "rate" || key == "rates" || key == "dilations") {
             common->dilateX = list->i()->data()[2];
             common->dilateY = list->i()->data()[1];
         } else if (key == "strides") {
@@ -164,7 +167,7 @@ public:
         int kh         = weightInfo->dim[0];
         int kw         = weightInfo->dim[1];
         int num_input  = weightInfo->dim[2];
-        int num_output = weightInfo->dim[3];;
+        int num_output = weightInfo->dim[3];
         weight = _Transpose(weight, {3, 2, 0, 1});
         weightInfo = weight->getInfo();
         weightTensorData = weight->readMap<float>();
@@ -183,7 +186,6 @@ public:
         common->kernelY     = kh;
         common->padX = 0;
         common->padY = 0;
-        
         bool success = _writeCommonAttr(common, op->main_as_Extra(), op->name()->str());
         if (!success) {
             return nullptr;
@@ -202,10 +204,54 @@ public:
         return newExpr;
     }
 };
+
+class Dilation2DTransform : public TFExtraManager::Transform {
+public:
+    virtual EXPRP onExecute(EXPRP expr) const override {
+        auto op = expr->get();
+        auto inputs = expr->inputs();
+        auto weight = inputs[1];
+        auto weightInfo = weight->getInfo();
+        auto weightTensorData = weight->readMap<float>();
+        if (nullptr == weightInfo || nullptr == weightTensorData) {
+            MNN_ERROR("For %s convolution weight is not const\n", expr->name().c_str());
+            return nullptr;
+        }
+        std::unique_ptr<Convolution2DT> convolution2D(new MNN::Convolution2DT);
+        int kh = weightInfo->dim[0];
+        int kw = weightInfo->dim[1];
+        int depth = weightInfo->dim[2];
+        weight = _Transpose(weight, {2, 0, 1});
+        weightInfo = weight->getInfo();
+        weightTensorData = weight->readMap<float>();
+        convolution2D->weight.resize(weightInfo->size);
+        ::memcpy(convolution2D->weight.data(), weightTensorData, weightInfo->size * sizeof(float));
+        convolution2D->common.reset(new MNN::Convolution2DCommonT);
+        auto common          = convolution2D->common.get();
+        common->outputCount = depth;
+        common->kernelX = kw;
+        common->kernelY = kh;
+        
+        bool success = _writeCommonAttr(common, op->main_as_Extra(), op->name()->str());
+        if (!success) {
+            return nullptr;
+        }
+        
+        std::unique_ptr<OpT> newOp(new OpT);
+        newOp->name = expr->name();
+        newOp->type = OpType_Dilation2D;
+        newOp->main.type = OpParameter_Convolution2D;
+        newOp->main.value = convolution2D.release();
+        
+        return Expr::create(newOp.get(), {inputs[0]}, 1);
+    }
+};
+
 static auto gRegister = []() {
     TFExtraManager::get()->insert("Conv2D", std::shared_ptr<TFExtraManager::Transform>(new ConvolutionTransform));
     TFExtraManager::get()->insert("Conv2DBackpropInput", std::shared_ptr<TFExtraManager::Transform>(new DeconvolutionTransform));
     TFExtraManager::get()->insert("DepthwiseConv2dNative", std::shared_ptr<TFExtraManager::Transform>(new ConvolutionDepthwiseTransform));
+    TFExtraManager::get()->insert("Dilation2D", std::shared_ptr<TFExtraManager::Transform>(new Dilation2DTransform));
     return true;
 }();
 }

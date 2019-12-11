@@ -6,12 +6,12 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLRelu.hpp"
+#include "backend/opengl/GLRelu.hpp"
 #include <sstream>
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
-#include "TensorUtils.hpp"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
+#include "core/TensorUtils.hpp"
 
 namespace MNN {
 namespace OpenGL {
@@ -25,9 +25,9 @@ GLRelu::GLRelu(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) :
 }
 
 GLRelu::~GLRelu() {
-    
+
 }
-    
+
 ErrorCode GLRelu::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     std::vector<std::string> prefix;
     setLocalSize(prefix, mLocalSize, 8, 8, 1);
@@ -61,7 +61,7 @@ ErrorCode GLRelu::onExecute(const std::vector<Tensor *> &inputs, const std::vect
     int ih = input->height();
     int ic_4 = UP_DIV(input->channel(), 4);
     int ib = input->batch();
-    
+
     if(OpType_PReLU == mType){
         mProgram->useProgram();
         glBindImageTexture(0, output->deviceId(), 0, GL_TRUE, 0, GL_WRITE_ONLY, ((GLBackend *)backend())->getTextrueFormat());
@@ -91,7 +91,7 @@ ErrorCode GLRelu::onExecute(const std::vector<Tensor *> &inputs, const std::vect
         OPENGL_CHECK_ERROR;
         ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
     }
-    
+
     return NO_ERROR;
 }
 GLCreatorRegister<TypedCreator<GLRelu>> __relu_op(OpType_ReLU);

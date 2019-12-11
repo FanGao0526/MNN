@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUUnary.hpp"
+#include "backend/cpu/CPUUnary.hpp"
 #include <cmath>
-#include "CPUBackend.hpp"
-#include "Macro.h"
+#include "backend/cpu/CPUBackend.hpp"
+#include "core/Macro.h"
 
 namespace MNN {
 CPUUnary::CPUUnary(Backend *b, UnaryOpOperation type) : MNN::Execution(b), mType(type) {

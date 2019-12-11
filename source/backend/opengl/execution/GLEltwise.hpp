@@ -8,9 +8,9 @@
 
 #ifndef MNNDEMO_GLELTWISE_H
 #define MNNDEMO_GLELTWISE_H
-#include "Execution.hpp"
-#include "GLProgram.hpp"
-#include "GLTexture.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLProgram.hpp"
+#include "backend/opengl/GLTexture.hpp"
 #include "MNN_generated.h"
 namespace MNN {
 namespace OpenGL {

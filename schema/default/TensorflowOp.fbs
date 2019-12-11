@@ -245,3 +245,18 @@ table DetectionPostProcessParam{
     // always size == 4
     centerSizeEncoding:[float];
 }
+
+table OneHotParam{
+    dType:DataType=DT_FLOAT;
+    axis:int=-1;
+}
+
+enum PadValueMode : byte{
+    CONSTANT = 0,
+    REFLECT = 1,
+    SYMMETRIC = 2
+}
+
+table PadParam{
+    mode: PadValueMode = CONSTANT;
+}

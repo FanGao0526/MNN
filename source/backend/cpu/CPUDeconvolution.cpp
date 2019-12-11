@@ -6,19 +6,19 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "CPUDeconvolution.hpp"
-#include "BufferAllocator.hpp"
-#include "CPUBackend.hpp"
-#include "Concurrency.h"
-#include "Macro.h"
-#include "Matrix.hpp"
-#include "TensorUtils.hpp"
-#include "Vec4.hpp"
-#include "compute/CommonOptFunction.h"
-#include "compute/ConvOpt.h"
-#include "compute/DeconvolutionWithStride.hpp"
+#include "backend/cpu/CPUDeconvolution.hpp"
+#include "core/BufferAllocator.hpp"
+#include "backend/cpu/CPUBackend.hpp"
+#include "core/Concurrency.h"
+#include "core/Macro.h"
+#include "math/Matrix.hpp"
+#include "core/TensorUtils.hpp"
+#include "math/Vec4.hpp"
+#include "backend/cpu/compute/CommonOptFunction.h"
+#include "backend/cpu/compute/ConvOpt.h"
+#include "backend/cpu/compute/DeconvolutionWithStride.hpp"
 //#define MNN_OPEN_TIME_TRACE
-#include "AutoTime.hpp"
+#include <MNN/AutoTime.hpp>
 
 using namespace MNN::Math;
 namespace MNN {

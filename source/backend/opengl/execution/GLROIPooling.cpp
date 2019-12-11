@@ -6,10 +6,10 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "GLROIPooling.hpp"
+#include "backend/opengl/GLROIPooling.hpp"
 #include "AllShader.hpp"
-#include "GLBackend.hpp"
-#include "Macro.h"
+#include "backend/opengl/GLBackend.hpp"
+#include "core/Macro.h"
 namespace MNN {
 namespace OpenGL {
 GLRoiPooling::GLRoiPooling(const std::vector<Tensor *> &inputs, const Op *op, Backend *bn) : Execution(bn) {
@@ -19,13 +19,13 @@ GLRoiPooling::GLRoiPooling(const std::vector<Tensor *> &inputs, const Op *op, Ba
     mPoolProgram = extra->getProgram("roipooling", glsl_roiPooling_glsl, prefix);
     mSpatialScale = op->main_as_RoiPooling()->spatialScale();
 }
-    
+
 GLRoiPooling::~GLRoiPooling() {
 }
 
-    
+
 ErrorCode GLRoiPooling::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
-   
+
     return NO_ERROR;
 }
 
@@ -33,7 +33,7 @@ ErrorCode GLRoiPooling::onExecute(const std::vector<Tensor *> &inputs, const std
     auto output = outputs[0];
     auto input  = inputs[0];
     auto roi  = inputs[0];
-    
+
     int ob = output->batch();
     int oc = output->channel();
     int oh = output->height();

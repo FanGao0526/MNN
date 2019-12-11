@@ -7,14 +7,14 @@
 //
 
 #include "TensorConvertGrad.hpp"
-#include "Macro.h"
+#include "core/Macro.h"
 using namespace std;
 using namespace MNN;
 
 class TensorConvertGrad : public OpGrad {
 public:
     virtual std::vector<Express::VARP> onGrad(Express::EXPRP expr, const std::vector<Express::VARP>& output, const std::vector<Express::VARP>& backwardOutput) override {
-        std::vector<Express::VARP> result{nullptr};
+        std::vector<Express::VARP> result(1, nullptr);
         std::unique_ptr<OpT> forwardOp(expr->get()->UnPack());
 
         unique_ptr<OpT> newOp(new OpT);
@@ -29,6 +29,7 @@ public:
         newOp->main.value    = cInfo;
         
         result[0] = Express::Variable::create(Express::Expr::create(std::move(newOp), {backwardOutput[0]}));
+        result[0]->setName(expr->name() + "_Grad");
         return result;
     }
 };

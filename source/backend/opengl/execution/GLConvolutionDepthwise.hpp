@@ -9,8 +9,8 @@
 #ifndef MNNDEMO_GLCONVOLUTIONDEPTHWISE_H
 #define MNNDEMO_GLCONVOLUTIONDEPTHWISE_H
 
-#include "Execution.hpp"
-#include "GLConvolution.hpp"
+#include "core/Execution.hpp"
+#include "backend/opengl/GLConvolution.hpp"
 #include "MNN_generated.h"
 
 namespace MNN {
