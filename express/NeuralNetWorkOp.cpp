@@ -9,25 +9,12 @@
 #include <algorithm>
 #include <map>
 #include <numeric>
-#include "MNN/expr/ExprCreator.hpp"
-#include "MNN/MNNDefine.h"
+#include <MNN/expr/ExprCreator.hpp>
+#include <MNN/MNNDefine.h>
 #include "MNN_generated.h"
-#include "MNN/expr/Utils.hpp"
+#include "Utils.hpp"
 namespace MNN {
 namespace Express {
-static MNN_DATA_FORMAT _convertFormat(Dimensionformat format) {
-    switch (format) {
-        case NCHW:
-            return MNN_DATA_FORMAT_NCHW;
-        case NHWC:
-            return MNN_DATA_FORMAT_NHWC;
-        case NC4HW4:
-            return MNN_DATA_FORMAT_NC4HW4;
-        default:
-            break;
-    }
-    return MNN_DATA_FORMAT_UNKNOWN;
-}
 static PadMode _convertPadMode(PaddingMode mode) {
     switch (mode) {
         case CAFFE:
@@ -54,91 +41,58 @@ static PoolPadType _convertPoollingPadMode(PaddingMode mode) {
     }
     return PoolPadType_CAFFE;
 }
-static void _fillDataIntoBlob(BlobT* blob, const void* ptr, INTS dims, halide_type_t type) {
-    int length = 1;
-    for (int i = 0; i < dims.size(); ++i) {
-        length *= dims[i];
-    }
-    if (type.code == halide_type_float) {
-        blob->dataType = DataType_DT_FLOAT;
-        blob->float32s.resize(length);
-        ::memcpy(blob->float32s.data(), ptr, length * sizeof(float));
-    } else {
-        blob->dataType = DataType_DT_INT32;
-        blob->int32s.resize(length);
-        ::memcpy(blob->int32s.data(), ptr, length * sizeof(int));
-    }
-}
-static void _fillDataIntoBlob(BlobT* blob, float value, INTS dims) {
-    blob->dataType = DataType_DT_FLOAT;
-    auto size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<int>());
-    blob->float32s.resize(size);
-    for (int i = 0; i < size; ++i) {
-        blob->float32s[i] = value;
-    }
-}
+
 VARP _Input(INTS dims, Dimensionformat format, halide_type_t type) {
-    std::unique_ptr<OpT> input(new OpT);
-    input->type                  = OpType_Input;
-    input->main.type             = OpParameter_Input;
-    input->main.value            = new InputT;
-    input->main.AsInput()->dtype = (MNN::DataType)Utils::convertDataType(type);
-    MNN_ASSERT(input->main.AsInput()->dtype != DataType_DT_INVALID);
-    input->main.AsInput()->dims    = dims;
-    input->main.AsInput()->dformat = (MNN_DATA_FORMAT)Utils::convertFormat(format);
-    return (Variable::create(Expr::create(input.get(), {})));
+    Variable::Info info;
+    info.dim = std::move(dims);
+    info.order = format;
+    info.type = type;
+    info.ptr = nullptr;
+    return (Variable::create(Expr::create(std::move(info))));
+}
+VARP _Scalar(const void* ptr, halide_type_t type) {
+    Variable::Info info;
+    info.dim = {};
+    info.order = NHWC;
+    info.type = type;
+    info.ptr = (void*)ptr;
+    return (Variable::create(Expr::create(std::move(info))));
 }
 VARP _Const(const void* ptr, INTS dims, Dimensionformat format, halide_type_t type) {
-    MNN_ASSERT(type.code == halide_type_float || type.code == halide_type_int);
-    auto blob        = new BlobT;
-    blob->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(format);
-    blob->dims       = dims;
-    _fillDataIntoBlob(blob, ptr, dims, type);
-
-    std::unique_ptr<OpT> op(new OpT);
-    op->type       = OpType_Const;
-    op->main.type  = OpParameter_Blob;
-    op->main.value = blob;
-    return (Variable::create(Expr::create(op.get(), {})));
+    Variable::Info info;
+    info.dim = std::move(dims);
+    info.order = format;
+    info.type = type;
+    info.ptr = (void*)ptr;
+    return (Variable::create(Expr::create(std::move(info))));
 }
 
 VARP _Const(float value, INTS dims, Dimensionformat format) {
-    auto blob = new BlobT;
-    blob->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(format);
-    blob->dims = dims;
-    _fillDataIntoBlob(blob, value, dims);
-
-    std::unique_ptr<OpT> constOp(new OpT);
-    constOp->type                      = OpType_Const;
-    constOp->main.type                 = OpParameter_Blob;
-    constOp->main.value                = blob;
-    return (Variable::create(Expr::create(constOp.get(), {})));
+    auto size                          = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<int>());
+    std::vector<float> values;
+    values.resize(size);
+    for (int i = 0; i < size; ++i) {
+        values[i] = value;
+    }
+    Variable::Info info;
+    info.dim = std::move(dims);
+    info.order = format;
+    info.type = halide_type_of<float>();
+    info.ptr = (void*)values.data();
+    return (Variable::create(Expr::create(std::move(info))));
 }
-VARP _TrainableParam(const void* ptr, INTS dims, Dimensionformat format, halide_type_t type) {
-    MNN_ASSERT(type.code == halide_type_float || type.code == halide_type_int);
-    auto blob        = new BlobT;
-    blob->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(format);
-    blob->dims       = dims;
-    _fillDataIntoBlob(blob, ptr, dims, type);
 
-    std::unique_ptr<OpT> op(new OpT);
-    op->type       = OpType_TrainableParam;
-    op->main.type  = OpParameter_Blob;
-    op->main.value = blob;
-    return (Variable::create(Expr::create(op.get(), {})));
+VARP _TrainableParam(const void* ptr, INTS dims, Dimensionformat format, halide_type_t type) {
+    auto v = _Const(ptr, dims, format, type);
+    v.fix(VARP::TRAINABLE);
+    return v;
 }
 VARP _TrainableParam(float value, INTS dims, Dimensionformat format) {
-    auto blob = new BlobT;
-    blob->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(format);
-    blob->dims = dims;
-    _fillDataIntoBlob(blob, value, dims);
-
-    std::unique_ptr<OpT> constOp(new OpT);
-    constOp->type                      = OpType_TrainableParam;
-    constOp->main.type                 = OpParameter_Blob;
-    constOp->main.value                = blob;
-    return (Variable::create(Expr::create(constOp.get(), {})));
+    auto v = _Const(value, dims, format);
+    v.fix(VARP::TRAINABLE);
+    return v;
 }
+
 VARP _Conv(VARP weight, VARP bias, VARP x, PaddingMode pad, INTS stride, INTS dilate, int group, INTS pads) {
     std::unique_ptr<OpT> convOp(new OpT);
     convOp->type = OpType_Convolution;
@@ -149,8 +103,9 @@ VARP _Conv(VARP weight, VARP bias, VARP x, PaddingMode pad, INTS stride, INTS di
     }
     auto channel    = std::vector<int>{shape->dim[1], shape->dim[0]};
     auto kernelSize = std::vector<int>{shape->dim[3], shape->dim[2]};
-    if (channel[0] == channel[1] && channel[0] == group) {
+    if (1 == channel[1] && channel[0] == group) {
         convOp->type = OpType_ConvolutionDepthwise;
+        channel[1] = group;
     }
     convOp->main.type  = OpParameter_Convolution2D;
     convOp->main.value = new Convolution2DT;
@@ -168,7 +123,6 @@ VARP _Conv(VARP weight, VARP bias, VARP x, PaddingMode pad, INTS stride, INTS di
     conv2D->common->dilateY     = dilate[1];
     conv2D->common->kernelX     = kernelSize[0];
     conv2D->common->kernelY     = kernelSize[1];
-    INTS weightDims             = {channel[1], channel[0] / group, kernelSize[1], kernelSize[0]};
     return (Variable::create(Expr::create(convOp.get(), {x, weight, bias})));
 }
 VARP _Conv(std::vector<float>&& weight, std::vector<float>&& bias, VARP x, INTS channel, INTS kernelSize,
@@ -235,8 +189,9 @@ VARP _Deconv(VARP weight, VARP bias, VARP x, PaddingMode pad, INTS stride, INTS 
     auto shape      = weight->getInfo();
     auto channel    = std::vector<int>{shape->dim[1], shape->dim[0]};
     auto kernelSize = std::vector<int>{shape->dim[3], shape->dim[2]};
-    if (channel[0] == channel[1] && channel[0] == group) {
+    if (1 == channel[1] && channel[0] == group) {
         convOp->type = OpType_DeconvolutionDepthwise;
+        channel[1] = group;
     }
     convOp->main.type  = OpParameter_Convolution2D;
     convOp->main.value = new Convolution2DT;
@@ -259,8 +214,10 @@ VARP _Deconv(VARP weight, VARP bias, VARP x, PaddingMode pad, INTS stride, INTS 
     conv2D->common->dilateY     = dilate[1];
     conv2D->common->kernelX     = kernelSize[0];
     conv2D->common->kernelY     = kernelSize[1];
-    INTS weightDims             = {channel[1], channel[0] / group, kernelSize[1], kernelSize[0]};
-    return (Variable::create(Expr::create(std::move(convOp), {x, weight, bias})));
+    if (nullptr != bias) {
+        return (Variable::create(Expr::create(std::move(convOp), {x, weight, bias})));
+    }
+    return (Variable::create(Expr::create(std::move(convOp), {x, weight})));
 }
 
 static VARP _Pool(VARP x, INTS kernel, INTS stride, PoolType type, PaddingMode pad, INTS pads) {
@@ -299,7 +256,7 @@ VARP _Reshape(VARP x, INTS dim, Dimensionformat format) {
     reshape->main.type                 = OpParameter_Reshape;
     reshape->main.value                = new ReshapeT;
     reshape->main.AsReshape()->dims    = dim;
-    reshape->main.AsReshape()->dimType = _convertFormat(format);
+    reshape->main.AsReshape()->dimType = (MNN_DATA_FORMAT)Utils::convertFormat(format);
     return (Variable::create(Expr::create(reshape.get(), {x})));
 }
 VARP _Reshape(VARP x, VARP shape) {
@@ -371,17 +328,15 @@ VARP _Concat(VARPS xs, int axis) {
 
 VARP _Convert(VARP x, Dimensionformat dest) {
     std::unique_ptr<OpT> convert(new OpT);
-    if (nullptr == x->getInfo()) {
-        return x;
-    }
-    auto source = x->getInfo()->order;
-    if (source == dest) {
-        return x;
+    if (nullptr != x->getInfo()) {
+        auto source = x->getInfo()->order;
+        if (source == dest) {
+            return x;
+        }
     }
     convert->type                               = OpType_ConvertTensor;
     convert->main.type                          = OpParameter_TensorConvertInfo;
     convert->main.value                         = new TensorConvertInfoT;
-    convert->main.AsTensorConvertInfo()->source = (MNN_DATA_FORMAT)Utils::convertFormat(source);
     convert->main.AsTensorConvertInfo()->dest   = (MNN_DATA_FORMAT)Utils::convertFormat(dest);
     return (Variable::create(Expr::create(convert.get(), {x})));
 }
@@ -604,12 +559,11 @@ VARP _Shape(VARP x) {
     shape->type = OpType_Shape;
     return (Variable::create(Expr::create(std::move(shape), {x})));
 }
-VARP _Pack(VARPS xs, halide_type_t dtype, int axis) {
+VARP _Pack(VARPS xs, int axis) {
     std::unique_ptr<OpT> pack(new OpT);
     pack->type                         = OpType_Pack;
     pack->main.type                    = OpParameter_PackParam;
     pack->main.value                   = new PackParamT;
-    pack->main.AsPackParam()->dataType = (MNN::DataType)Utils::convertDataType(dtype);
     pack->main.AsPackParam()->axis     = axis;
     return (Variable::create(Expr::create(std::move(pack), xs)));
 }
@@ -678,6 +632,64 @@ VARP _Unsqueeze(VARP x, INTS axes) {
     squeeze->main.value       = squeezeParam;
     return Variable::create(Expr::create(std::move(squeeze), {x}));
 }
+/*Computes exponential linear: alpha * (exp(features) - 1) if < 0, features otherwise.
+features: A variable of type Halide_Type_Float
+alpha: Alpha factor (positive float)
+Returns:
+A variable. Has the same type as features.
+*/
+VARP _Elu(VARP features, float alpha) {
+    std::unique_ptr<OpT> op(new OpT);
+    op->type       = OpType_ELU;
+    auto eluParam = new ELUT;
+    op->main.type = OpParameter_ELU;
+    eluParam->alpha = alpha;
+    op->main.value = eluParam;
+    return (Variable::create(Expr::create(std::move(op), {features})));
+}
+/*Computes the size of the variable
+Args:
+input: A variable of type Halide_Type_Float or Halide_Type_Int
+Returns:
+A variable. The shape is (), and type is Halide_Type_Int
+*/
+VARP _Size(VARP input) {
+    std::unique_ptr<OpT> op(new OpT);
+    op->type       = OpType_Size;
+    return (Variable::create(Expr::create(std::move(op), {input})));
+}
+
+/*Computes scaled exponential linear: scale * alpha * (exp(features) - 1) if < 0, scale * features otherwise.
+Args:
+features: A variable of type Halide_Type_Float
+scale: Scaling factor (positive float)
+alpha: Alpha factor (positive float)
+Returns:
+A variable. Has the same type as features.
+*/
+VARP _Selu(VARP features, float scale, float alpha) {
+    std::unique_ptr<OpT> op(new OpT);
+    op->type       = OpType_Selu;
+    auto seluParam = new SeluT;
+    op->main.type = OpParameter_Selu;
+    seluParam->scale = scale;
+    seluParam->alpha = alpha;
+    op->main.value = seluParam;
+    return (Variable::create(Expr::create(std::move(op), {features})));
+
+}
+/*Gather slices from params into a variable with shape specified by indices.
+Args:
+params: A variable. The variables from which to gather values.
+indices: A variable. Must be one of the following types: Halide_Type_Int.
+Returns:
+A variable. Has the same type as params.
+*/
+VARP _GatherND(VARP params, VARP indices) {
+    std::unique_ptr<OpT> op(new OpT);
+    op->type       = OpType_GatherND;
+    return (Variable::create(Expr::create(std::move(op), {params, indices})));
+}
 
 /*BatchToSpace for N-D variables
 This operation reshapes the "batch" dimension 0 into M + 1 dimensions of shape block_shape + [batch], 
@@ -722,7 +734,7 @@ VARP _BatchToSpaceND(VARP input, VARP block_shape, VARP crops) {
     MNN_ASSERT(halide_type_int == info_crops->type.code);
   
     blob_blockShape->dims = info_block_shape->dim;
-    blob_blockShape->dataFormat = _convertFormat(info_block_shape->order);
+    blob_blockShape->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(info_block_shape->order);
     blob_blockShape->dataType = (MNN::DataType)Utils::convertDataType(info_block_shape->type);
     auto data_block_shape = block_shape->readMap<int>();
     for (int i=0; i<info_block_shape->size; i++)
@@ -730,7 +742,7 @@ VARP _BatchToSpaceND(VARP input, VARP block_shape, VARP crops) {
         blob_blockShape->int32s.emplace_back(data_block_shape[i]);
     }
     blob_paddings->dims = info_crops->dim;
-    blob_paddings->dataFormat = _convertFormat(info_crops->order);
+    blob_paddings->dataFormat = (MNN_DATA_FORMAT)Utils::convertFormat(info_crops->order);
     blob_paddings->dataType = (MNN::DataType)Utils::convertDataType(info_crops->type);
     auto data_crop = crops->readMap<int>();
     for (int i=0; i<info_crops->size; i++)
@@ -743,8 +755,21 @@ VARP _BatchToSpaceND(VARP input, VARP block_shape, VARP crops) {
     op->main.AsSpaceBatch()->blockShape = std::move(blob_blockShape);
     op->main.AsSpaceBatch()->padding = std::move(blob_paddings);
     return Variable::create(Expr::create(std::move(op), {input}));
+}
 
-
+VARP _Interp(VARPS xs, float widthScale, float heightScale, int outputWidth, int outputHeight, int resizeType, bool alignCorners) {
+    std::unique_ptr<OpT> interp(new OpT);
+    interp->type        = OpType_Interp;
+    auto param          = new InterpT;
+    param->widthScale   = widthScale;
+    param->heightScale  = heightScale;
+    param->outputWidth  = outputWidth;
+    param->outputHeight = outputHeight;
+    param->resizeType   = resizeType;
+    param->alignCorners = alignCorners;
+    interp->main.value  = param;
+    interp->main.type   = OpParameter_Interp;
+    return Variable::create(Expr::create(std::move(interp), xs));
 }
 
 } // namespace Express

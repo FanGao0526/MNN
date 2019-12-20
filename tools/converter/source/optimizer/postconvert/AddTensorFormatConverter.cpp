@@ -32,7 +32,7 @@ const std::set<MNN::OpType> NC4HW4_OPs = {
     MNN::OpType_QuantizedDepthwiseConv2D,
     MNN::OpType_BatchToSpaceND,
     MNN::OpType_SpaceToBatchND,
-    MNN::OpType_BatchNorm,
+    MNN::OpType_InstanceNorm,
     MNN::OpType_Moments,
     MNN::OpType_QuantizedAvgPool,
     MNN::OpType_QuantizedAdd,
@@ -286,10 +286,10 @@ public:
                     reshape->dims[axisMap[i]] = originDim[i];
                 }
             }
-            if (MNN::OpType_ArgMax == op->type) {
+            if (MNN::OpType_ArgMax == op->type || MNN::OpType_ArgMin == op->type) {
                 auto param      = op->main.AsArgMax();
                 auto originAxis = param->axis;
-                DCHECK(originAxis >= 0 && originAxis <= 3) << "ArgMax axis ERROR!";
+                DCHECK(originAxis >= 0 && originAxis <= 3) << "ArgMax / Argmin axis ERROR!";
                 param->axis = axisMap[originAxis];
             }
         }

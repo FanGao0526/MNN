@@ -30,8 +30,6 @@ private:
     std::shared_ptr<Tensor> mBias;
 
     Tensor mTempBuffer;
-    bool mInsideThread  = false;
-    bool mOutsideThread = true;
 };
 } // namespace MNN
 #endif /* Convolution3x3_hpp */

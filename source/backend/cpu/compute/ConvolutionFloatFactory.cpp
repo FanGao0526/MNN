@@ -50,7 +50,7 @@ static Execution* _createUnit(const Tensor* input, const Tensor* output, Backend
 Execution* ConvolutionFloatFactory::create(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs,
                                            const MNN::Op* op, Backend* backend) {
     auto conv2d = op->main_as_Convolution2D();
-    if (inputs.size() == 3) {
+    if (inputs.size() > 1) {
         // Use Input Weight and Bias
         return new ConvolutionTiledExecutorMultiInput(conv2d->common(), backend);
     }

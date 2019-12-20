@@ -14,6 +14,9 @@ namespace MNN {
 namespace Express {
 static auto gRegister = []() {
     auto compare = [](EXPRP expr) {
+        if (nullptr == expr->get()) {
+            return false;
+        }
         if (expr->get()->type() != OpType_BinaryOp) {
             return false;
         }
@@ -53,15 +56,7 @@ static auto gRegister = []() {
         }
         auto newExpr = Expr::create(convOp.get(), inputExpr->inputs());
         newExpr->setName(expr->name());
-        auto outputs = expr->outputs();
-        for (auto weakVar : outputs) {
-            auto var = weakVar.lock();
-            if (nullptr == var) {
-                continue;
-            }
-            auto index = var->expr().second;
-            Variable::setExpr(var, newExpr, index);
-        }
+        Expr::replace(expr, newExpr);
         return true;
     };
     TemplateMerge::getInstance("Merge").insertTemplate("ConvBiasAdd", compare, modify);

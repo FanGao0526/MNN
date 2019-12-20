@@ -10,9 +10,6 @@
 #include <MNN/expr/Expr.hpp>
 #include <MNN/expr/ExprCreator.hpp>
 #include "MNNTestSuite.h"
-#include "MNN_generated.h"
-#include "core/Session.hpp"
-#include "core/TensorUtils.hpp"
 #include "TestUtils.h"
 
 using namespace MNN::Express;

@@ -43,11 +43,10 @@ static void runPooling3D(MNN::OpT* dstOp, const onnx::NodeProto* onnxNode,
     for (int i = 0; i < onnxNode->attribute_size(); ++i) {
         const auto& attributeProto = onnxNode->attribute(i);
         const auto& attributeName  = attributeProto.name();
-        auto values = attributeProto.ints();
         auto vec = std::vector<int>({
-            static_cast<int>(values[0]),
-            static_cast<int>(values[1]),
-            static_cast<int>(values[2])
+            static_cast<int>(attributeProto.ints(0)),
+            static_cast<int>(attributeProto.ints(1)),
+            static_cast<int>(attributeProto.ints(2))
         });
         if (attributeName == "kernel_shape") {
             pool->kernels = vec;

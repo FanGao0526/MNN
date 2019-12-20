@@ -107,6 +107,6 @@ public:
     }
 };
 
-REGISTER_CPU_OP_CREATOR(CPUInstanceNormCreator, OpType_BatchNorm);
+REGISTER_CPU_OP_CREATOR(CPUInstanceNormCreator, OpType_InstanceNorm);
 
 } // namespace MNN

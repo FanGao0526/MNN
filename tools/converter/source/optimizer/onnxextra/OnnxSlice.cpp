@@ -23,7 +23,7 @@ public:
         auto input = inputs[0];
         auto inputInfo = input->getInfo();
         if (nullptr == inputInfo) {
-            MNN_ERROR("Onnx slice must use the same dimensition");
+            MNN_ERROR("Onnx slice must use the same dimensition\n");
             return nullptr;
         }
         std::unique_ptr<MNN::OpT> sliceOp(new OpT);

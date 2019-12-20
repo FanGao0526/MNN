@@ -14,6 +14,14 @@ enum PadValueMode {CONSTANT, REFLECT, SYMMETRIC};
 MNN_PUBLIC VARP _Input(INTS dims = {}, Dimensionformat format = NC4HW4, halide_type_t type = halide_type_of<float>());
 MNN_PUBLIC VARP _Clone(VARP source, bool deepCopy=false);
 
+MNN_PUBLIC VARP _Scalar(const void* ptr, halide_type_t type);
+
+template <typename T>
+VARP _Scalar(T value) {
+    return _Scalar(&value, halide_type_of<T>());
+}
+
+
 MNN_PUBLIC VARP _Const(float value, INTS dims = {}, Dimensionformat format = NHWC);
 MNN_PUBLIC VARP _Const(const void* ptr, INTS dims = {}, Dimensionformat format = NHWC,
                        halide_type_t type = halide_type_of<float>());
@@ -31,7 +39,7 @@ MNN_PUBLIC VARP _Deconv(VARP weight, VARP bias, VARP x, PaddingMode pad = VALID,
                                 INTS dilate = {1, 1}, int group = 1, INTS pads = {0, 0});
 MNN_PUBLIC VARP _MaxPool(VARP x, INTS kernel, INTS stride, PaddingMode pad = VALID, INTS pads= {0, 0});
 MNN_PUBLIC VARP _AvePool(VARP x, INTS kernel, INTS stride, PaddingMode pad = VALID, INTS pads= {0, 0});
-MNN_PUBLIC VARP _Reshape(VARP x, INTS dim, Dimensionformat format);
+MNN_PUBLIC VARP _Reshape(VARP x, INTS dim, Dimensionformat format = NHWC);
 MNN_PUBLIC VARP _Reshape(VARP x, VARP shape);
 MNN_PUBLIC VARP _Scale(VARP x, int channels, std::vector<float>&& scales, std::vector<float>&& bias);
 
@@ -64,7 +72,7 @@ MNN_PUBLIC VARP _ExpandDims(VARP x, int axis);
 MNN_PUBLIC VARP _ExpandDims(VARP x, VARP axis);
 
 MNN_PUBLIC VARP _Shape(VARP x);
-MNN_PUBLIC VARP _Pack(VARPS xs, halide_type_t dtype, int axis);
+MNN_PUBLIC VARP _Pack(VARPS xs, int axis);
 enum InterpolationMethod {BILINEAR, NEAREST};
 MNN_PUBLIC VARP _CropAndResize(VARP image, VARP boxes, VARP indexes, VARP sizes, float extrapolation, InterpolationMethod method);
 MNN_PUBLIC VARP _Fill(VARP s, VARP v);
@@ -74,5 +82,10 @@ MNN_PUBLIC VARP _GatherV2(VARP params, VARP indices, VARP axis = nullptr);
 MNN_PUBLIC VARP _Squeeze(VARP x, INTS axes = {});
 MNN_PUBLIC VARP _Unsqueeze(VARP x, INTS axes = {});
 MNN_PUBLIC VARP _BatchToSpaceND(VARP input, VARP block_shape, VARP crops);
+MNN_PUBLIC VARP _GatherND(VARP params, VARP indices);
+MNN_PUBLIC VARP _Selu(VARP features, float scale, float alpha);
+MNN_PUBLIC VARP _Size(VARP input);
+MNN_PUBLIC VARP _Elu(VARP features, float alpha=1.0);
+MNN_PUBLIC VARP _Interp(VARPS xs, float widthScale, float heightScale, int outputWidth, int outputHeight, int resizeType, bool alignCorners);
 } // namespace Express
 } // namespace MNN

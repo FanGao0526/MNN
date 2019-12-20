@@ -315,7 +315,8 @@ ErrorCode Pipeline::prepare() {
 
 ErrorCode Pipeline::execute() {
     mBackend->onExecuteBegin();
-    for (auto& u : mUnits) {
+    for (int i=0; i<mUnits.size(); ++i) {
+        auto& u = mUnits[i];
         auto code = u->execute();
         if (code != NO_ERROR) {
             mBackend->onExecuteEnd();

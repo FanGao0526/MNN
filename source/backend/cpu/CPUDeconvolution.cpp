@@ -125,7 +125,9 @@ ErrorCode CPUDeconvolutionMultiInput::onExecute(const std::vector<Tensor*>& inpu
     _transformWeight(inputs[1]->host<float>(), mWeight->host<float>(), outputCount, srcCount, fh, fw,
                      mCacheWeight->host<float>());
     ::memset(mBias->host<float>(), 0, mBias->size());
-    ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    if (inputs.size() > 2) {
+        ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    }
     return mOrigin->onExecute(mTempInputs, outputs);
 }
 ErrorCode CPUDeconvolutionMultiInput::onResize(const std::vector<Tensor*>& inputs,
@@ -278,7 +280,7 @@ class CPUDeconvolutionCreator : public CPUBackend::Creator {
 public:
     virtual Execution* onCreate(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs,
                                 const MNN::Op* op, Backend* backend) const {
-        if (inputs.size() == 3) {
+        if (inputs.size() > 1) {
             return new CPUDeconvolutionMultiInput(inputs[0], op, backend);
         }
         auto convOp = op->main_as_Convolution2D();

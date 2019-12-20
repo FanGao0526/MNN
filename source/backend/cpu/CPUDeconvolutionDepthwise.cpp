@@ -70,7 +70,9 @@ ErrorCode CPUDeconvolutionDepthwiseMultiInput::onResize(const std::vector<Tensor
 ErrorCode CPUDeconvolutionDepthwiseMultiInput::onExecute(const std::vector<Tensor*>& inputs,
                                                          const std::vector<Tensor*>& outputs) {
     ::memset(mBias->host<float>(), 0, mBias->size());
-    ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    if (inputs.size() > 2) {
+        ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    }
     ::memset(mWeight->host<float>(), 0, mWeight->size());
     auto weight      = mWeight->host<float>();
     auto outputCount = inputs[0]->channel();
@@ -203,7 +205,7 @@ class CPUDeconvolutionDepthwiseCreator : public CPUBackend::Creator {
 public:
     virtual Execution* onCreate(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs,
                                 const MNN::Op* op, Backend* backend) const {
-        if (3 == inputs.size()) {
+        if (1 < inputs.size()) {
             return new CPUDeconvolutionDepthwiseMultiInput(inputs[0], op, backend);
         }
         return new CPUDeconvolutionDepthwise(inputs[0], op, backend);

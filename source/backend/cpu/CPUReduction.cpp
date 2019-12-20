@@ -9,6 +9,7 @@
 #include "backend/cpu/CPUReduction.hpp"
 #include "backend/cpu/compute/CommonOptFunction.h"
 #include "core/Macro.h"
+#include <cmath>
 
 #define UNIT 4
 #define UNIT_DUP(value) \

@@ -212,11 +212,9 @@ namespace MNN {
                     subExec = new ConvolutionTiledExecutor(common, backend(), originWeight, originWeightSize, bias, biasSize);
                 }
                 mSubExecution.emplace_back(subExec);
-            }
-            backend()->onReleaseBuffer(zerosLikeBias.get(), Backend::DYNAMIC);
-            for (int d = 0; d < kernelDepth; ++d) {
                 mSubExecution[d]->onResize({mSubInputTensors[d].get()}, {mSubOutputTensor.get()});
             }
+            backend()->onReleaseBuffer(zerosLikeBias.get(), Backend::DYNAMIC);
         }
 
         if (mCrossDepth) {

@@ -19,7 +19,7 @@ enum OpType : int {
     QuantizedAdd,
     ArgMax,
     AsString,
-    BatchNorm,
+    InstanceNorm,
     BatchToSpaceND,
     Bias,
     BinaryOp,
@@ -140,6 +140,9 @@ enum OpType : int {
     Dilation2D,
     MaxLayerCount = 128, // this count must bigger than the layer id of last layer
     ConvertTensor = 129,
+    ArgMin = 130,
+    LinSpace = 131,
+    
     PLUGIN = 256, //The Type load from plugin
     //Training Op Start from 257
     Select = 257,
@@ -152,6 +155,7 @@ enum OpType : int {
     SoftmaxGrad,
     Conv2DBackPropFilter,
     TrainableParam,
+    BatchNorm,
 
     Extra = 512,
     // quantization

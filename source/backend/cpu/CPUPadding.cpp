@@ -163,7 +163,7 @@ ErrorCode CPUPadding::onExecute(const std::vector<Tensor *> &inputs, const std::
         // REFLECT or SYMMETRIC
         int offset     = mMode == PadValueMode_SYMMETRIC ? 0 : 1;
         auto cacheData = reinterpret_cast<CacheElement *>(mCache.host<char>());
-        std::fill(cacheData, cacheData + mCache.elementSize(), CacheElement{-1, -1});
+        std::fill(cacheData, cacheData + mCache.elementSize() / 2, CacheElement{-1, -1});
         const int *pad  = inputs[1]->host<int32_t>();
         int outputIndex = 0;
         MirrorPadImpl(inputs[0], cacheData, outputs[0], pad, 0, 0, outputIndex, offset);

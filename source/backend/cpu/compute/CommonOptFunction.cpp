@@ -136,18 +136,6 @@ void MNNScaleAndAddBias(float* dst, const float* src, const float* bias, const f
     }
 }
 
-void MNNReluWithSlope(float* dst, const float* src, size_t sizeQuad, float slope) {
-    int i;
-    size_t size = sizeQuad * 4;
-    for (i = 0; i < size; ++i) {
-        if (src[i] < 0) {
-            dst[i] = src[i] * slope;
-        } else {
-            dst[i] = src[i];
-        }
-    }
-}
-
 void MNNPackC4(float* dst, const float* src, size_t area, size_t depth) {
     int z, x;
     int cur = 0;
@@ -647,4 +635,12 @@ void MNNTanh(float* dst, const float* src, size_t dataSize) {
         // outputData[i] = 1 - 2 / (expf(2 * inputData[i]) + 1);
         dst[i] = tanhf_poly(src[i]);
     }
+}
+
+void MNNReluWithSlope(float* dst, const float* src, size_t sizeQuad, float slope) {
+    float slopeValue[4];
+    for (int i=0; i<4; ++i) {
+        slopeValue[i] = slope;
+    }
+    MNNReluWithSlopeChannel(dst, src, slopeValue, sizeQuad, 1);
 }

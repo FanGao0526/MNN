@@ -6,8 +6,8 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
-#include "MNN/expr/Optimizer.hpp"
-#include "MNN/expr/optimizer/MergeOptimizer.hpp"
+#include <MNN/expr/Optimizer.hpp>
+#include "MergeOptimizer.hpp"
 #include "core/Backend.hpp"
 namespace MNN {
 namespace Express {

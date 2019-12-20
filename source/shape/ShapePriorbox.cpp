@@ -55,8 +55,8 @@ public:
             stepH = (float)imageH / h;
         }
 
-        int minSizeCount = minSizes ? minSizes->size() : 0;
-        int maxSizeCount = maxSizes ? maxSizes->size() : 0;
+        int minSizeCount = minSizes ? (int)minSizes->size() : 0;
+        int maxSizeCount = maxSizes ? (int)maxSizes->size() : 0;
         std::vector<float> aspectRatiosValue{1.0f};
         if (aspectRatios != nullptr) {
             for (int i = 0; i < aspectRatios->size(); ++i) {

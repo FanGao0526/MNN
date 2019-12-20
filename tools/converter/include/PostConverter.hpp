@@ -24,6 +24,6 @@
 /**
  *@brief optimize MNN net
  */
-std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& netT);
+std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& netT, bool forTraining);
 
 #endif // OPTIMIZER_HPP

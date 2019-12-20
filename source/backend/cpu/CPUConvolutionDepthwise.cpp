@@ -153,7 +153,9 @@ ErrorCode CPUConvolutionDepthwise::MultiInputFloatExecution::onExecute(const std
     auto kh = mWeight->length(1);
     auto kw = mWeight->length(2);
     ::memset(mBias->host<float>(), 0, mBias->size());
-    ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    if (inputs.size() > 2) {
+        ::memcpy(mBias->host<float>(), inputs[2]->host<float>(), inputs[2]->size());
+    }
     // Reorder weight from whc -> pwhc4
     ::memset(mWeight->host<float>(), 0, mWeight->size());
     auto outputCount = inputs[0]->channel();
@@ -449,7 +451,7 @@ public:
                                 const MNN::Op* op, Backend* backend) const {
         auto conv2D = op->main_as_Convolution2D();
         auto conv   = op->main_as_Convolution2D()->common();
-        if (3 == inputs.size()) {
+        if (1 < inputs.size()) {
             return new CPUConvolutionDepthwise::MultiInputFloatExecution(conv, backend);
         }
         if (conv->dilateX() == 1 && conv->dilateY() == 1 && conv->strideX() == 1 && conv->strideY() == 1 &&

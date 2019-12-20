@@ -23,17 +23,83 @@ struct OpT;
 struct Op;
 struct NetT;
 namespace Express {
-class Solution;
 class Variable;
 class Expr;
 class Executor;
 typedef std::shared_ptr<Expr> EXPRP;
 typedef std::weak_ptr<Expr> WeakEXPRP;
-typedef std::shared_ptr<Variable> VARP;
-typedef std::weak_ptr<Variable> WeakVARP;
 typedef std::vector<int> INTS;
-typedef std::vector<VARP> VARPS;
 enum Dimensionformat { NHWC, NC4HW4, NCHW };
+class MNN_PUBLIC VARP {
+public:
+    VARP() {
+        // Do nothing
+    }
+    VARP(std::shared_ptr<Variable> c) {
+        mContent = std::move(c);
+    }
+    VARP(Variable* c) {
+        mContent.reset(c);
+    }
+    Variable* get() const  {
+        return mContent.get();
+    }
+    ~ VARP() {
+        // Do nothing
+    }
+    VARP(const VARP& var) {
+        mContent = var.mContent;
+    }
+    VARP(VARP&& var) {
+        mContent = std::move(var.mContent);
+    }
+    VARP operator+(VARP var) const;
+    VARP operator-(VARP var) const;
+    VARP operator*(VARP var) const;
+    VARP operator/(VARP var) const;
+    VARP mean(INTS dims) const;
+    VARP sum(INTS dims) const;
+
+    bool operator==(const VARP& var) {
+        return var.mContent == mContent;
+    }
+    bool operator<(const VARP& var) {
+        return mContent < var.mContent;
+    }
+    bool operator<=(const VARP& var) {
+        return mContent <= var.mContent;
+    }
+    VARP& operator=(const VARP& var) {
+        mContent = var.mContent;
+        return *this;
+    }
+    VARP& operator=(Variable* var) {
+        mContent.reset(var);
+        return *this;
+    }
+    Variable* operator->() const  {
+        return mContent.get();
+    }
+    enum InputType {
+        INPUT = 0,
+        CONST = 1,
+        TRAINABLE = 2,
+    };
+    bool fix(InputType type) const;
+private:
+    std::shared_ptr<Variable> mContent;
+};
+inline bool operator==(Variable* src, VARP dst) {
+    return src == dst.get();
+}
+inline bool operator!=(Variable* src, VARP dst) {
+    return src != dst.get();
+}
+inline bool operator<(VARP src, VARP dst) {
+    return src.get() < dst.get();
+}
+typedef std::vector<VARP> VARPS;
+
 class MNN_PUBLIC Variable {
 public:
     struct Info {
@@ -42,14 +108,13 @@ public:
         halide_type_t type;
         int size;
         void* ptr = nullptr;
+        void syncSize();
     };
     const std::string& name() const;
     void setName(const std::string& name);
     std::pair<EXPRP, int> expr() const {
         return std::make_pair(mFrom, mFromIndex);
     }
-    static void setExpr(VARP dst, EXPRP from, int index);
-
     // If compute info error, return nullptr
     const Info* getInfo();
     bool resize(INTS dims);
@@ -71,10 +136,6 @@ public:
 
     static VARP create(EXPRP expr, int index = 0);
 
-    void visitOutputs(const std::function<bool(VARP, int)>& visit);
-
-    static void visit(VARP var, const std::function<bool(VARP)>& before, const std::function<bool(VARP)>& after);
-
     static std::vector<VARP> load(const char* fileName);
     static std::map<std::string, VARP> loadMap(const char* fileName);
     static std::pair<std::map<std::string, VARP>, std::map<std::string, VARP>> getInputAndOutput(const std::map<std::string, VARP>& allVariable);
@@ -83,14 +144,12 @@ public:
     static void save(const std::vector<VARP>& vars, const char* fileName);
     static void save(const std::vector<VARP>& vars, NetT* dest);
 
-    size_t linkNumber() const {
-        return mTo.size();
+    size_t linkNumber() const;
+    const std::vector<WeakEXPRP>& toExprs() const;
+    void setExpr(EXPRP expr, int index) {
+        mFrom = expr;
+        mFromIndex = index;
     }
-
-    const std::list< std::pair<int, WeakEXPRP> >& toExprs() const{
-        return mTo;
-    }
-
 private:
     Variable(EXPRP expr, int index) {
         mFrom      = expr;
@@ -104,12 +163,12 @@ private:
     friend class Expr;
     EXPRP mFrom;
     int mFromIndex;
-    std::list<std::pair<int, WeakEXPRP>> mTo;
 };
 
 class MNN_PUBLIC Expr {
 public:
     struct Inside;
+    static EXPRP create(Variable::Info&& info, std::shared_ptr<Executor> executor = nullptr);
     static EXPRP create(const OpT* op, std::vector<VARP> inputs, int outputSize = 1,
                         std::shared_ptr<Executor> executor = nullptr);
     static EXPRP create(std::unique_ptr<OpT>&& op, std::vector<VARP> inputs, int outputSize = 1,
@@ -122,24 +181,21 @@ public:
     const Op* get() const {
         return mOp;
     }
-    void set(const OpT* op);
     const std::vector<VARP>& inputs() const {
         return mInputs;
     }
-    const Variable::Info* outputInfo(int index) const;
     int outputSize() const {
-        return mOutputSize;
+        return mOutputNames.size();
     }
+    static void replace(EXPRP oldExpr, EXPRP newExpr);
     bool requireInfo();
-    bool requireAlloc();
     bool requireCompute();
+    void visitOutputs(const std::function<bool(EXPRP, int)>& visit);
+    static void visit(EXPRP expr, const std::function<bool(EXPRP)>& before, const std::function<bool(EXPRP)>& after);
 
-    Solution* inside();
-
-    const std::list<WeakVARP>& outputs() const {
-        return mOutputs;
+    const std::vector<WeakEXPRP>& outputs() const {
+        return mTo;
     }
-    static void setInput(EXPRP dst, VARP src, int index);
     ~Expr();
 
     bool visited() const {
@@ -155,28 +211,36 @@ public:
         return mOutputNames[index];
     }
 
-private:
-    bool setContentDirty(int inputIndex);
+    VARP::InputType inputType() const {return mType;}
+    Variable::Info* outputInfo(int index);
+    std::pair<std::shared_ptr<char>, int> extra() const {
+        return std::make_pair(mExtraBuffer, mOpBufferSize);
+    }
     bool setInfoDirty();
+private:
+    void set(const OpT* op);
+    static void _addLinkForInputs(EXPRP expr);
+    bool setContentDirty(int inputIndex);
 
     Expr(int outputSize);
 
     friend class Variable;
+    friend class VARP;
+    std::shared_ptr<Executor> mExecutor;
+    VARP::InputType mType;
     const Op* mOp;
     std::vector<VARP> mInputs;
     std::vector<std::string> mOutputNames;
-    std::list<WeakVARP> mOutputs;
-    const int mOutputSize;
 
     bool mValid = true;
     bool mInfoDirty    = true;
-    bool mAllocated    = false;
     bool mContentDirty = true;
-    char* mExtraBuffer = nullptr;
+    std::shared_ptr<char> mExtraBuffer;
+    int mOpBufferSize = 0;
     std::string mName;
     std::shared_ptr<Inside> mInside = nullptr;
     bool mVisited                   = false;
-    std::shared_ptr<Executor> mExecutor;
+    std::vector<WeakEXPRP> mTo;
 };
 } // namespace Express
 } // namespace MNN

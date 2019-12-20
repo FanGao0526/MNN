@@ -155,6 +155,13 @@ class DeconvolutionTransform : public TFExtraManager::Transform {
 public:
     virtual EXPRP onExecute(EXPRP expr) const override {
         auto op = expr->get();
+        bool depthwise = false;
+        {
+            std::unique_ptr<ExtraT> extraT(op->main_as_Extra()->UnPack());
+            if(extraT->type == "DepthwiseConv2dNativeBackpropInput") {
+                depthwise = true;
+            }
+        }
         auto inputs = expr->inputs();
         auto weight = inputs[1];
         auto weightInfo = weight->getInfo();
@@ -194,6 +201,9 @@ public:
         std::unique_ptr<OpT> newOp(new OpT);
         newOp->name = expr->name();
         newOp->type = OpType_Deconvolution;
+        if (depthwise) {
+            newOp->type = OpType_DeconvolutionDepthwise;
+        }
         newOp->main.type = OpParameter_Convolution2D;
         newOp->main.value = convolution2D.release();
         if (inputs.size() == 2) {
@@ -201,6 +211,19 @@ public:
         }
         MNN_ASSERT(inputs.size() == 3);
         auto newExpr = Expr::create(newOp.get(), {inputs[2]}, 1);
+        /* check shape consistent between tf's output_shape attribute and MNN inferred output shape
+         * When stride > 1, one output-shape can be reached from (stride - 1) input-shapes
+         */
+        auto output = Variable::create(newExpr);
+        auto outputInfo = output->getInfo();
+        auto realOutputShape = inputs[0]->readMap<int>();
+        int inferHeight = outputInfo->dim[2], inferWidth = outputInfo->dim[3]; // MNN format NCHW
+        int realHeight = realOutputShape[1], realWidth = realOutputShape[2]; // tf format NHWC
+        if (realHeight != inferHeight || realWidth != inferWidth) {
+            MNN_ERROR("==== output_shape is not consistent with inferred output shape in MNN. ====\n");
+            MNN_ERROR("====(height,width): (%d,%d) vs (%d,%d)\n ====", realHeight, realWidth, inferHeight, inferWidth);
+            return nullptr;
+        }
         return newExpr;
     }
 };
@@ -251,6 +274,7 @@ static auto gRegister = []() {
     TFExtraManager::get()->insert("Conv2D", std::shared_ptr<TFExtraManager::Transform>(new ConvolutionTransform));
     TFExtraManager::get()->insert("Conv2DBackpropInput", std::shared_ptr<TFExtraManager::Transform>(new DeconvolutionTransform));
     TFExtraManager::get()->insert("DepthwiseConv2dNative", std::shared_ptr<TFExtraManager::Transform>(new ConvolutionDepthwiseTransform));
+    TFExtraManager::get()->insert("DepthwiseConv2dNativeBackpropInput", std::shared_ptr<TFExtraManager::Transform>(new DeconvolutionTransform));
     TFExtraManager::get()->insert("Dilation2D", std::shared_ptr<TFExtraManager::Transform>(new Dilation2DTransform));
     return true;
 }();

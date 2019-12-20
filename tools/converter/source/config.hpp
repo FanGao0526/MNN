@@ -51,6 +51,7 @@ public:
     MODEL_SOURCE model;
     bool benchmarkModel;
     bool saveHalfFloat;
+    bool forTraining = false;
 };
 
 #endif // CONFIG_HPP

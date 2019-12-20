@@ -27,6 +27,7 @@ MNN_PUBLIC VARP _LessEqual(VARP x, VARP y);
 MNN_PUBLIC VARP _FloorMod(VARP x, VARP y);
 
 //UnaryOPs
+MNN_PUBLIC VARP _Sign(VARP a);
 MNN_PUBLIC VARP _Abs(VARP x);
 MNN_PUBLIC VARP _Negative(VARP x);
 MNN_PUBLIC VARP _Floor(VARP x);
@@ -65,6 +66,10 @@ MNN_PUBLIC VARP _Max(VARP a, VARP b, std::vector<float> coeff);
 MNN_PUBLIC VARP _Sub(VARP a, VARP b, std::vector<float> coeff);
 
 //OtherOPs
+template<typename T>
+MNN_PUBLIC VARP _Cast(VARP x) {
+    return _Cast(x, halide_type_of<T>());
+}
 MNN_PUBLIC VARP _Cast(VARP x, halide_type_t dtype);
 MNN_PUBLIC VARP _MatMul(VARP a, VARP b, bool tranposeA = false, bool tranposeB = false);
 MNN_PUBLIC VARP _Normalize(VARP x, int32_t acrossSpatial, int32_t channelShared, float eps, std::vector<float> scale);

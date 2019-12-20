@@ -31,7 +31,7 @@ public:
         const std::vector<int> expectedOutput_0 = {3, 3, 2, 2};
         const std::vector<int> expectedOutput_1 = {3, 2, 3, 1};
         auto gotOutput_0 = output_0->readMap<int>();
-        auto gotOutput_1 = output_0->readMap<int>();
+        auto gotOutput_1 = output_1->readMap<int>();
         if (!checkVector<int>(gotOutput_0, expectedOutput_0.data(), 4, 0)) {
             MNN_ERROR("ArgMaxTest test axis_0 failed!\n");
             return false;

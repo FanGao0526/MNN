@@ -7,11 +7,11 @@
 //
 
 #include <sstream>
-#include "backend/opengl/shaders/AllShader.h"
-#include "backend/opengl/GLSSBOBuffer.hpp"
-#include "backend/opengl/GLTexture.hpp"
+#include "AllShader.hpp"
+#include "GLSSBOBuffer.hpp"
+#include "GLTexture.hpp"
 #include <MNN/AutoTime.hpp>
-#include "backend/opengl/GLBackend.hpp"
+#include "GLBackend.hpp"
 #include "core/Macro.h"
 #include "core/TensorUtils.hpp"
 #include <mutex>

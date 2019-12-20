@@ -442,8 +442,8 @@ CPUPool3D::CPUPool3D(Backend *b, const Pool3D *param) : MNN::Execution(b) {
 ErrorCode CPUPool3D::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
     auto input = inputs[0];
     auto output = outputs[0];
-
     if (mPadType == PoolPadType_SAME) {
+        mPads.clear();
         for (unsigned int i = 0; i < output->dimensions() - 2; ++i) {
             const int inputLength = input->length(i + 2), outputLength = output->length(i + 2);
             const int inputLengthNeed = (outputLength - 1) * mStrides[i] + mKernels[i];

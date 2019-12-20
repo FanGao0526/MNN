@@ -164,7 +164,7 @@ Execution *MetalBackend::onCreate(const std::vector<Tensor *> &inputs, const std
     }
     auto exe = iter->second->onCreate(inputs, op, this);
     if (NULL == exe) {
-        MNN_PRINT("The Creator Don't support type %d, %s\n", op->type(), op->name()->c_str());
+        MNN_PRINT("The Creator Don't support type %d, %s\n", op->type(), op->name() ? op->name()->c_str() : "");
         return NULL;
     }
     return exe;

@@ -90,7 +90,7 @@ ErrorCode CPUConv2DBackPropFilter::onResize(const std::vector<Tensor *> &inputs,
                                 continue;
                             }
                             auto dst = dstX + kx + ky*kw;
-                            auto src = srcBatch + (sy * ih + sx) * ic;
+                            auto src = srcBatch + (sy * iw + sx) * ic;
                             for (int sz=0; sz<ic; ++sz) {
                                 dst[kw*kh*sz] = src[sz];
                             }

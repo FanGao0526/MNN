@@ -14,8 +14,8 @@
 
 namespace MNN {
 
-CPUArgMax::CPUArgMax(Backend *backend, int topk, int outMaxVal, int softmaxThreshold, int axis)
-    : Execution(backend), mTopk(topk), mOutMaxVal(outMaxVal), mSoftmaxThreshold(softmaxThreshold), mAxis(axis) {
+CPUArgMax::CPUArgMax(Backend *backend, ArgMinOrMax mode, int topk, int outMaxVal, int softmaxThreshold, int axis)
+    : Execution(backend), mMode(mode), mTopk(topk), mOutMaxVal(outMaxVal), mSoftmaxThreshold(softmaxThreshold), mAxis(axis) {
     // nothing to do
 }
 
@@ -25,7 +25,7 @@ ErrorCode CPUArgMax::onResize(const std::vector<Tensor *> &inputs, const std::ve
     auto output               = outputs[0];
     auto inputDimensionFromat = TensorUtils::getDescribe(input)->dimensionFormat;
 
-    mFromNHWC = inputDimensionFromat == MNN_DATA_FORMAT_NHWC;
+    mFromNHWC = inputDimensionFromat != MNN_DATA_FORMAT_NC4HW4;
 
     if (!mFromNHWC) {
         // if the input format is NC4HW4, convert to be NCHW from NC4HW4 firstly
@@ -95,27 +95,50 @@ ErrorCode CPUArgMax::onExecute(const std::vector<Tensor *> &inputs, const std::v
     };
 
     if (mFromNHWC) {
-        auto srcOrigin = input->host<float>();
-        auto dstOrigin = output->host<int>();
-        for (int i = 0; i < mNum; ++i) {
-            auto iptr = srcOrigin + i * mDim * mKeyExtent;
-            auto optr = dstOrigin + i * mKeyExtent;
-            
-            for(int k = 0; k < mKeyExtent; ++k){
-                int index      = 0;
-                float maxValue = -FLT_MAX;
-                for (int j = 0; j < mDim; ++j) {
-                    auto val = iptr[k + j * mKeyExtent];
-                    if (val > maxValue) {
-                        maxValue = val;
-                        index    = j;
+        if (mMode == ARGMAX) {
+            auto srcOrigin = input->host<float>();
+            auto dstOrigin = output->host<int>();
+            for (int i = 0; i < mNum; ++i) {
+                auto iptr = srcOrigin + i * mDim * mKeyExtent;
+                auto optr = dstOrigin + i * mKeyExtent;
+
+                for(int k = 0; k < mKeyExtent; ++k){
+                    int index      = 0;
+                    float maxValue = -FLT_MAX;
+                    for (int j = 0; j < mDim; ++j) {
+                        auto val = iptr[k + j * mKeyExtent];
+                        if (val > maxValue) {
+                            maxValue = val;
+                            index    = j;
+                        }
                     }
+                    optr[k] = index;
                 }
-                optr[k] = index;
             }
-            
+        } else {
+            auto srcOrigin = input->host<float>();
+            auto dstOrigin = output->host<int>();
+            for (int i = 0; i < mNum; ++i) {
+                auto iptr = srcOrigin + i * mDim * mKeyExtent;
+                auto optr = dstOrigin + i * mKeyExtent;
+
+                for(int k = 0; k < mKeyExtent; ++k){
+                    int index      = 0;
+                    float minValue = FLT_MAX;
+                    for (int j = 0; j < mDim; ++j) {
+                        auto val = iptr[k + j * mKeyExtent];
+                        if (val < minValue) {
+                            minValue = val;
+                            index    = j;
+                        }
+                    }
+                    optr[k] = index;
+                }
+            }
         }
+
     } else {
+        MNN_ASSERT(mMode == ARGMAX); // caffe does not have argmin layer
         // Legacy code for CAFFE
         backend()->onCopyBuffer(input, &mInputBuffer);
 
@@ -180,8 +203,15 @@ public:
     virtual Execution *onCreate(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs,
                                 const MNN::Op *op, Backend *backend) const {
         auto argMax = op->main_as_ArgMax();
-        return new CPUArgMax(backend, argMax->topK(), argMax->outMaxVal(), argMax->softmaxThreshold(), argMax->axis());
+        if (op->type() == OpType_ArgMin) {
+            return new CPUArgMax(backend, CPUArgMax::ArgMinOrMax::ARGMIN,
+                    argMax->topK(), argMax->outMaxVal(), argMax->softmaxThreshold(), argMax->axis());
+        } else {
+            return new CPUArgMax(backend, CPUArgMax::ArgMinOrMax::ARGMAX,
+                    argMax->topK(), argMax->outMaxVal(), argMax->softmaxThreshold(), argMax->axis());
+        }
     }
 };
 REGISTER_CPU_OP_CREATOR(CPUArgMaxCreator, OpType_ArgMax);
+REGISTER_CPU_OP_CREATOR(CPUArgMaxCreator, OpType_ArgMin);
 } // namespace MNN

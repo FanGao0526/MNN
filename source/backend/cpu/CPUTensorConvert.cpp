@@ -155,13 +155,16 @@ ErrorCode CPUTensorConverter::convert(const Tensor* input, const Tensor* output)
             NC4HW42NHWC((float*)ib.host, (float*)ob.host, batch, channel, area);
         }
     } else if (MNN_DATA_FORMAT_NHWC == source && MNN_DATA_FORMAT_NCHW == dest) {
-        MNN_ASSERT(bitLength == 4);
+        if (bitLength != 4) {
+            return NOT_SUPPORT;
+        }
         NHWC2NCHW((float*)ib.host, (float*)ob.host, batch, channel, area);
     } else if (MNN_DATA_FORMAT_NCHW == source && MNN_DATA_FORMAT_NHWC == dest) {
-        MNN_ASSERT(bitLength == 4);
+        if (bitLength != 4) {
+            return NOT_SUPPORT;
+        }
         NCHW2NHWC((float*)ib.host, (float*)ob.host, batch, channel, area);
     } else {
-        MNN_ASSERT(false);
         return NOT_SUPPORT;
     }
 
@@ -176,8 +179,7 @@ class CPUTensorConvertFactory : public CPUBackend::Creator {
 public:
     virtual Execution* onCreate(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs,
                                 const MNN::Op* op, Backend* backend) const {
-        return new CPUTensorConverter(backend, op->main_as_TensorConvertInfo()->source(),
-                                      op->main_as_TensorConvertInfo()->dest());
+        return new CPUTensorConverter(backend);
     }
 };
 

@@ -6,8 +6,11 @@
 //  Copyright © 2018, Alibaba Group Holding Limited
 //
 
+#include <MNN/MNNDefine.h>
 #include <math.h>
 #include <stdlib.h>
+#include <MNN/Interpreter.hpp>
+#include <MNN/Tensor.hpp>
 #include <algorithm>
 #include <fstream>
 #include <map>
@@ -16,11 +19,8 @@
 #include <sstream>
 #include <stack>
 #include <string>
-#include <MNN/Interpreter.hpp>
-#include <MNN/MNNDefine.h>
 #include "MNN_generated.h"
 #include "core/Macro.h"
-#include <MNN/Tensor.hpp>
 //#define MNN_OPEN_TIME_TRACE
 #include <MNN/AutoTime.hpp>
 using namespace MNN;
@@ -53,14 +53,16 @@ static void dumpTensorToFile(const Tensor* tensor, std::string fileName) {
 #define TEST_TRAIN
 int main(int argc, const char* argv[]) {
     if (argc < 5) {
-        MNN_PRINT("Usage: ./train.out model.mnn data.bin test.bin times [learningRate] [LossName] [backend {0:CPU,1:OPENCL}]\n");
+        MNN_PRINT(
+            "Usage: ./train.out model.mnn data.bin test.bin times [learningRate] [LossName] [backend "
+            "{0:CPU,1:OPENCL}]\n");
         return 0;
     }
     unique_ptr<Interpreter> net(Interpreter::createFromFile(argv[1]));
 
-    int time  = atoi(argv[4]);
+    int time      = atoi(argv[4]);
     int trainStep = 1;
-    float lr  = 0.00001f;
+    float lr      = 0.00001f;
     if (argc > 5) {
         lr = atof(argv[5]);
     }
@@ -79,9 +81,9 @@ int main(int argc, const char* argv[]) {
     config.saveTensors.emplace_back(lossName);
     BackendConfig backendConfig;
     backendConfig.precision = MNN::BackendConfig::Precision_High;
-    config.backendConfig = &backendConfig;
-    auto session = net->createSession(config);
-    auto loss    = net->getSessionOutput(session, lossName.c_str());
+    config.backendConfig    = &backendConfig;
+    auto session            = net->createSession(config);
+    auto loss               = net->getSessionOutput(session, lossName.c_str());
     std::unique_ptr<Tensor> lossHost(Tensor::createHostTensorFromDevice(loss, false));
     int maxBatch = 0;
     if (nullptr == loss) {
@@ -125,7 +127,7 @@ int main(int argc, const char* argv[]) {
             ::memcpy(tensor->host<float>(), sourcePtr, tensor->size());
             auto name        = netC->oplists()->GetAs<Op>(i)->name()->str();
             auto inputOrigin = net->getSessionInput(session, name.c_str());
-            batch = inputOrigin->shape()[0];
+            batch            = inputOrigin->shape()[0];
             FUNC_PRINT(batch);
             std::unique_ptr<Tensor> inputOriginUser(new Tensor(inputOrigin, dimType));
             tensorInputStorage.insert(
@@ -134,18 +136,18 @@ int main(int argc, const char* argv[]) {
             FUNC_PRINT_ALL(name.c_str(), s);
         }
     }
-    auto learnRate       = net->getSessionInput(session, "LearningRate");
+    auto learnRate = net->getSessionInput(session, "LearningRate");
     std::unique_ptr<Tensor> learnRateHost(Tensor::createHostTensorFromDevice(learnRate, false));
     learnRateHost->host<float>()[0] = lr;
-    TensorCallBack begin = [](const std::vector<Tensor*>& inputs, const std::string& name) { return true; };
-    TensorCallBack afterEval = [lossName](const std::vector<Tensor*>& output, const std::string& name) {
+    TensorCallBack begin            = [](const std::vector<Tensor*>& inputs, const std::string& name) { return true; };
+    TensorCallBack afterEval        = [lossName](const std::vector<Tensor*>& output, const std::string& name) {
         if (name == lossName) {
             return false;
         }
         return true;
     };
 
-    int offset    = 0;
+    int offset = 0;
 
     for (int l = 0; l < time; ++l) {
         AUTOTIME;
@@ -201,7 +203,7 @@ int main(int argc, const char* argv[]) {
 #ifdef TEST_TRAIN
         static float historyLossValue = 1000000.0f;
         loss->copyToHostTensor(lossHost.get());
-        auto lossValue                = lossHost->host<float>()[0];
+        auto lossValue = lossHost->host<float>()[0];
         FUNC_PRINT_ALL(lossValue, f);
         if (lossValue > historyLossValue) {
             MNN_ERROR("Loss value error, from %f to %f \n", historyLossValue, lossValue);
@@ -271,14 +273,14 @@ int main(int argc, const char* argv[]) {
             auto& src = get<1>(iter.second);
             auto& dst = get<2>(iter.second);
             dst->copyFromHostTensor(src.get());
-//            auto fileName = iter.first;
-//            for (int i = 0; i < fileName.size(); ++i) {
-//                if (fileName[i] == '/') {
-//                    fileName[i] = '_';
-//                }
-//            }
-//            dumpTensorToFile(src.get(), "output/Input_Src_" + fileName);
-//            dumpTensorToFile(dst, "output/Input_Dst_" + fileName);
+            //            auto fileName = iter.first;
+            //            for (int i = 0; i < fileName.size(); ++i) {
+            //                if (fileName[i] == '/') {
+            //                    fileName[i] = '_';
+            //                }
+            //            }
+            //            dumpTensorToFile(src.get(), "output/Input_Src_" + fileName);
+            //            dumpTensorToFile(dst, "output/Input_Dst_" + fileName);
         }
         learnRate->copyFromHostTensor(learnRateHost.get());
         net->runSessionWithCallBack(session, begin, after, true);

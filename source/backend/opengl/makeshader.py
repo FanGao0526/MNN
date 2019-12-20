@@ -20,7 +20,7 @@ def getName(fileName):
 
 def generateFile(headfile, sourcefile, shaders):
     h = "#ifndef OPENGL_GLSL_SHADER_AUTO_GENERATE_H\n#define OPENGL_GLSL_SHADER_AUTO_GENERATE_H\n"
-    cpp = "#include \"<MNN/backend/opengl/shaders/AllShader.h>\"\n"
+    cpp = "#include \"AllShader.hpp\"\n"
     for s in shaders:
         name = getName(s)
         print name

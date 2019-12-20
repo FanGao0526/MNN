@@ -21,7 +21,7 @@ public:
             return false;
         }
         auto info                                             = op->main_as_TensorConvertInfo();
-        auto sourceFmt                                        = info->source();
+        auto sourceFmt                                        = TensorUtils::getDescribe(inputs[0])->dimensionFormat;
         auto destFmt                                          = info->dest();
         TensorUtils::getDescribe(outputs[0])->dimensionFormat = destFmt;
         ob.type                                               = ib.type;

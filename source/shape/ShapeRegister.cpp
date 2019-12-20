@@ -2,6 +2,7 @@
 namespace MNN {
 #ifdef MNN_CODEGEN_REGISTER
 extern void ___ArgMaxComputer__OpType_ArgMax__();
+extern void ___ArgMaxComputer__OpType_ArgMin__();
 extern void ___AsStringComputer__OpType_AsString__();
 extern void ___BatchMatMulComputer__OpType_BatchMatMul__();
 extern void ___BatchToSpaceNDSizeComputer__OpType_BatchToSpaceND__();
@@ -39,6 +40,7 @@ extern void ___GatherV2Computer__OpType_GatherV2__();
 extern void ___InnerProductComputer__OpType_InnerProduct__();
 extern void ___InterpComputer__OpType_Interp__();
 extern void ___LSTMComputer__OpType_LSTM__();
+extern void ___LinSpaceSizeComputer__OpType_LinSpace__();
 extern void ___MatMulSizeComputer__OpType_MatMul__();
 extern void ___MomentsComputer__OpType_Moments__();
 extern void ___NonMaxSuppressionV2Computer__OpType_NonMaxSuppressionV2__();
@@ -85,6 +87,7 @@ extern void ___WhereSizeComputer__OpType_Where__();
 
 void registerShapeOps() {
 ___ArgMaxComputer__OpType_ArgMax__();
+___ArgMaxComputer__OpType_ArgMin__();
 ___AsStringComputer__OpType_AsString__();
 ___BatchMatMulComputer__OpType_BatchMatMul__();
 ___BatchToSpaceNDSizeComputer__OpType_BatchToSpaceND__();
@@ -122,6 +125,7 @@ ___GatherV2Computer__OpType_GatherV2__();
 ___InnerProductComputer__OpType_InnerProduct__();
 ___InterpComputer__OpType_Interp__();
 ___LSTMComputer__OpType_LSTM__();
+___LinSpaceSizeComputer__OpType_LinSpace__();
 ___MatMulSizeComputer__OpType_MatMul__();
 ___MomentsComputer__OpType_Moments__();
 ___NonMaxSuppressionV2Computer__OpType_NonMaxSuppressionV2__();

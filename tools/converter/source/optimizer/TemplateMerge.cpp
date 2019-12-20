@@ -18,6 +18,9 @@ bool TemplateMerge::onExecute(const std::vector<VARP>& outputs, std::shared_ptr<
             std::set<EXPRP> invalidVARP;
             auto execute = Variable::getExecuteOrder(outputs);
             for (auto var : execute) {
+                if (var->get() == nullptr) {
+                    continue;
+                }
                 if (invalidVARP.find(var) != invalidVARP.end()) {
                     continue;
                 }

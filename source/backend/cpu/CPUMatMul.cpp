@@ -72,7 +72,7 @@ ErrorCode CPUMatMul::onResize(const std::vector<Tensor*>& inputs, const std::vec
                 auto dst = BTPtr + 16*lC4 * y;
                 auto src = BTempPtr + 4 * l * y;
                 ::memcpy(dst, src, 4*l*sizeof(float));
-                ::memset(dst+4*l, 0, (lC4*4-l) * sizeof(float));
+                ::memset(dst+4*l, 0, 4 * (lC4*4-l) * sizeof(float));
             }
         });
         backend()->onReleaseBuffer(BTemp.get(), Backend::DYNAMIC);

@@ -1,5 +1,5 @@
 //
-//  CPURelu.hpp
+//  CPUElu.hpp
 //  MNN
 //
 //  Created by MNN on 2019/09/23.

@@ -1,5 +1,5 @@
-#include "backend/opengl/shaders/AllShader.h"
-const char* glsl_convlutionDepthwise_glsl =
+#include "AllShader.hpp"
+const char* glsl_convlutionDepthwise_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform mediump image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -51,7 +51,7 @@ const char* glsl_convlutionDepthwise_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_softmaxWidth_glsl =
+const char* glsl_softmaxWidth_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform int w;\n"
@@ -91,7 +91,7 @@ const char* glsl_softmaxWidth_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_softmaxChannel_glsl =
+const char* glsl_softmaxChannel_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform int w;\n"
@@ -179,7 +179,7 @@ const char* glsl_softmaxChannel_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_eltwise_glsl =
+const char* glsl_eltwise_glsl = 
 "layout(FORMAT, binding=1) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=10) uniform ivec3 uOutputSize;\n"
 "layout (local_size_x = 2, local_size_y = 2, local_size_z = 16) in;\n"
@@ -194,7 +194,7 @@ const char* glsl_eltwise_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_gemm16x16_glsl =
+const char* glsl_gemm16x16_glsl = 
 "layout(std430) buffer;\n"
 "layout(binding=0, FORMAT) writeonly mediump uniform image2D uOutput;\n"
 "layout(binding=1, FORMAT) readonly mediump uniform image2D uInput;\n"
@@ -245,7 +245,7 @@ const char* glsl_gemm16x16_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_preluWithChannel_glsl =
+const char* glsl_preluWithChannel_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(binding=2) readonly buffer slope{\n"
@@ -268,7 +268,7 @@ const char* glsl_preluWithChannel_glsl =
 "    \n"
 "}\n"
 ;
-const char* glsl_image_copy_glsl =
+const char* glsl_image_copy_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform ivec4 imgSize;\n"
@@ -284,7 +284,7 @@ const char* glsl_image_copy_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_kernel2image_glsl =
+const char* glsl_kernel2image_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image2D uOutput;\n"
 "layout(binding=2) readonly buffer kernel{\n"
@@ -306,7 +306,7 @@ const char* glsl_kernel2image_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_convolution1x1_glsl =
+const char* glsl_convolution1x1_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -369,7 +369,7 @@ const char* glsl_convolution1x1_glsl =
 "    \n"
 "}\n"
 ;
-const char* glsl_col2im_glsl =
+const char* glsl_col2im_glsl = 
 "layout(std430) buffer;\n"
 "layout(binding=0, FORMAT) writeonly uniform mediump image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler2D uInput;\n"
@@ -404,7 +404,7 @@ const char* glsl_col2im_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_avgpool_glsl =
+const char* glsl_avgpool_glsl = 
 "layout(FORMAT, binding=0, location=0) readonly uniform PRECISION image3D uInput;\n"
 "layout(FORMAT, binding=1, location=1) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location = 2) uniform ivec2 uKernel;\n"
@@ -438,7 +438,7 @@ const char* glsl_avgpool_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_maxpool_glsl =
+const char* glsl_maxpool_glsl = 
 "layout(FORMAT, binding=0) readonly uniform PRECISION image3D uInput;\n"
 "layout(FORMAT, binding=1) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location = 2) uniform ivec2 uKernel;\n"
@@ -469,7 +469,7 @@ const char* glsl_maxpool_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_im2col1x1_glsl =
+const char* glsl_im2col1x1_glsl = 
 "layout(std430) buffer;\n"
 "layout(binding=0, FORMAT) writeonly mediump uniform image2D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -496,7 +496,7 @@ const char* glsl_im2col1x1_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_resizeBilinear_glsl =
+const char* glsl_resizeBilinear_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform ivec4 inImgSize;\n"
@@ -533,7 +533,7 @@ const char* glsl_resizeBilinear_glsl =
 "    \n"
 "}\n"
 ;
-const char* glsl_unary_glsl =
+const char* glsl_unary_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput0;\n"
 "layout(location=3) uniform ivec4 imgSize;\n"
@@ -552,7 +552,7 @@ const char* glsl_unary_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_resizeNearest_glsl =
+const char* glsl_resizeNearest_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform ivec4 inImgSize;\n"
@@ -584,7 +584,7 @@ const char* glsl_resizeNearest_glsl =
 "    \n"
 "}\n"
 ;
-const char* glsl_converter_glsl =
+const char* glsl_converter_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -602,7 +602,7 @@ const char* glsl_converter_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_roiPooling_glsl =
+const char* glsl_roiPooling_glsl = 
 "layout(location=0) uniform mediump sampler3D uInput;\n"
 "layout(FORMAT, binding=1) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=2) uniform mediump sampler3D uRoI;\n"
@@ -646,7 +646,7 @@ const char* glsl_roiPooling_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_blit_glsl =
+const char* glsl_blit_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(FORMAT, binding=1) readonly uniform PRECISION image3D uInput;\n"
 "layout(location = 2) uniform ivec3 uSourceOffset;\n"
@@ -664,7 +664,7 @@ const char* glsl_blit_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_kernel2ImageDepthwise_glsl =
+const char* glsl_kernel2ImageDepthwise_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(binding=2) readonly buffer kernel{\n"
@@ -695,7 +695,7 @@ const char* glsl_kernel2ImageDepthwise_glsl =
 "    imageStore(uOutput, pos, color);\n"
 "}\n"
 ;
-const char* glsl_clear_texture_glsl =
+const char* glsl_clear_texture_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image2D uOutput;\n"
 "layout(location = 1) uniform int width;\n"
 "layout(location = 2) uniform int height;\n"
@@ -709,7 +709,7 @@ const char* glsl_clear_texture_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_permute_glsl =
+const char* glsl_permute_glsl = 
 "layout(binding = 0) readonly buffer srcBuffer{\n"
 "    float data[];\n"
 "}uInput;\n"
@@ -740,7 +740,7 @@ const char* glsl_permute_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_image_to_nchw_buffer_glsl =
+const char* glsl_image_to_nchw_buffer_glsl = 
 "layout(FORMAT, binding=0) readonly uniform PRECISION image3D uImage;\n"
 "layout(binding=1) writeonly buffer destBuffer{\n"
 "    float data[];\n"
@@ -762,7 +762,7 @@ const char* glsl_image_to_nchw_buffer_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_convolution_glsl =
+const char* glsl_convolution_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -848,7 +848,7 @@ const char* glsl_convolution_glsl =
 "    \n"
 "}\n"
 ;
-const char* glsl_kernel2image_adreno_glsl =
+const char* glsl_kernel2image_adreno_glsl = 
 "layout(std430) buffer;\n"
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(binding=2) readonly buffer kernel{\n"
@@ -879,7 +879,7 @@ const char* glsl_kernel2image_adreno_glsl =
 "    imageStore(uOutput, ivec3(pos.x+3, pos.y, pos.z), color3);\n"
 "}\n"
 ;
-const char* glsl_binary_glsl =
+const char* glsl_binary_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput0;\n"
 "layout(location=2) uniform mediump sampler3D uInput1;\n"
@@ -907,7 +907,7 @@ const char* glsl_binary_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_relu_glsl =
+const char* glsl_relu_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform ivec4 imgSize;\n"
@@ -926,7 +926,7 @@ const char* glsl_relu_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_nc4hw4_buffer_to_image_glsl =
+const char* glsl_nc4hw4_buffer_to_image_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uImage;\n"
 "layout(binding=1) readonly buffer destBuffer{\n"
 "    vec4 data[];\n"
@@ -944,7 +944,7 @@ const char* glsl_nc4hw4_buffer_to_image_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_nhwc_buffer_to_image_glsl =
+const char* glsl_nhwc_buffer_to_image_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uImage;\n"
 "layout(binding=1) readonly buffer destBuffer{\n"
 "    float data[];\n"
@@ -968,7 +968,7 @@ const char* glsl_nhwc_buffer_to_image_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_im2col_glsl =
+const char* glsl_im2col_glsl = 
 "layout(std430) buffer;\n"
 "layout(binding=0, FORMAT) writeonly mediump uniform image2D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
@@ -1013,7 +1013,7 @@ const char* glsl_im2col_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_nchw_buffer_to_image_glsl =
+const char* glsl_nchw_buffer_to_image_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uImage;\n"
 "layout(binding=1) readonly buffer destBuffer{\n"
 "    float data[];\n"
@@ -1036,7 +1036,7 @@ const char* glsl_nchw_buffer_to_image_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_image_to_nhwc_buffer_glsl =
+const char* glsl_image_to_nhwc_buffer_glsl = 
 "layout(FORMAT, binding=0) readonly uniform PRECISION image3D uImage;\n"
 "layout(binding=1) writeonly buffer destBuffer{\n"
 "    float data[];\n"
@@ -1059,7 +1059,7 @@ const char* glsl_image_to_nhwc_buffer_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_image_to_nc4hw4_buffer_glsl =
+const char* glsl_image_to_nc4hw4_buffer_glsl = 
 "layout(FORMAT, binding=0) readonly uniform PRECISION image3D uImage;\n"
 "layout(std430, binding=1) writeonly buffer destBuffer{\n"
 "    vec4 data[];\n"
@@ -1077,7 +1077,7 @@ const char* glsl_image_to_nc4hw4_buffer_glsl =
 "    }\n"
 "}\n"
 ;
-const char* glsl_softmaxHeight_glsl =
+const char* glsl_softmaxHeight_glsl = 
 "layout(FORMAT, binding=0) writeonly uniform PRECISION image3D uOutput;\n"
 "layout(location=1) uniform mediump sampler3D uInput;\n"
 "layout(location=2) uniform int w;\n"

@@ -279,7 +279,10 @@ void CPUBackend::onCopyBuffer(const Tensor* srcTensor, const Tensor* dstTensor) 
         return;
     }
 
-    CPUTensorConverter::convert(srcTensor, dstTensor);
+    auto code = CPUTensorConverter::convert(srcTensor, dstTensor);
+    if (NO_ERROR != code) {
+        MNN_ERROR("Error in CPUBackend::onCopyBuffer\n");
+    }
 }
 
 struct CPUBackendCreator : BackendCreator {

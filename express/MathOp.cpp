@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <map>
 #include <numeric>
-#include "MNN/expr/ExprCreator.hpp"
-#include "MNN/MNNDefine.h"
+#include <MNN/expr/ExprCreator.hpp>
+#include <MNN/MNNDefine.h>
 #include "MNN_generated.h"
 
 namespace MNN {
@@ -80,7 +80,6 @@ VARP _Cast(VARP x, halide_type_t dtype) {
     op->main.type                 = OpParameter_CastParam;
     op->type                      = OpType_Cast;
     op->main.value                = new CastParamT;
-    op->main.AsCastParam()->srcT  = _convertDataType(x->getInfo()->type);
     op->main.AsCastParam()->dstT  = _convertDataType(dtype);
     return (Variable::create(Expr::create(std::move(op), {x})));
 }
@@ -248,6 +247,16 @@ A variable. Has the same type as x.
 VARP _Acos(VARP x)
 {
     return _Unary(x, UnaryOpOperation_ACOS);
+}
+
+
+/*Computes sign of x eltment-wise
+ sign(x) = 0 if x=0
+ sign(x) =-1 if x<0
+ sign(x) = 1 if x>0
+ */
+VARP _Sign(VARP x) {
+    return _Unary(x, UnaryOpOperation_SIGN);
 }
 
 /*Computes the trignometric inverse tangent of x element-wise.
@@ -790,6 +799,5 @@ VARP _BroadcastTo(VARP a, VARP shape) {
     op->main.value = nullptr;
     return (Variable::create(Expr::create(std::move(op), {a, shape})));
 }
-
 } // namespace Express
 } // namespace MNN

@@ -37,6 +37,9 @@ static auto gRegister = []() {
     auto extra = OnnxExtraManager::get();
     auto judge = [extra](EXPRP expr) {
         auto op = expr->get();
+        if (nullptr == op) {
+            return false;
+        }
         if (op->type() != OpType_Extra) {
             return false;
         }
@@ -62,15 +65,7 @@ static auto gRegister = []() {
             return false;
         }
         newExpr->setName(expr->name());
-        auto outputs = expr->outputs();
-        for (auto weakVar : outputs) {
-            auto var = weakVar.lock();
-            if (nullptr == var) {
-                continue;
-            }
-            auto index = var->expr().second;
-            Variable::setExpr(var, newExpr, index);
-        }
+        Expr::replace(expr, newExpr);
         return true;
     };
     TemplateMerge::getInstance("OnnxExtra").insertTemplate("OnnxExtraManager", judge, modify);

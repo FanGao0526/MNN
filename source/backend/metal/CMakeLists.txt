@@ -25,7 +25,7 @@ if(MNN_METAL AND APPLE)
         "${CMAKE_CURRENT_LIST_DIR}/MetalOPRegister.mm"
         COMMENT "Metal Code Generation"
       )
-      add_custom_target (MNNMetalCodeGen DEPENDS "${CMAKE_CURRENT_LIST_DIR}/MetalOPRegister.mm")
+      add_custom_target (MNNMetalCodeGen DEPENDS "${CMAKE_CURRENT_LIST_DIR}/MetalOPRegister.mm" COMMENT "Registering MetalOps")
       add_dependencies(MNNMetal MNNMetalCodeGen)
     ENDIF()
     add_dependencies(MNNMetal MNNMetalLIB)
